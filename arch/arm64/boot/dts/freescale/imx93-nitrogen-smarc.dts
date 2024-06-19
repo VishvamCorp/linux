@@ -94,6 +94,26 @@
 		};
 	};
 
+	reg_can1_stby: regulator-can0-stby {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_can1_stby>;
+		regulator-name = "can1-stby";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio3 27 GPIO_ACTIVE_HIGH>; /* CCM_CLK02 -> GPIO1 */
+		enable-active-high;
+	};
+
+	reg_can2_stby: regulator-can1-stby {
+		compatible = "regulator-fixed";
+		regulator-name = "can2-stby";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&pcal6534 15 GPIO_ACTIVE_HIGH>; /* P1_7 -> GPIO4 */
+		enable-active-high;
+	};
+
 	sound-wm8962 {
 		compatible = "fsl,imx-audio-wm8962";
 		model = "wm8962-audio";
@@ -130,10 +150,12 @@
 
 &flexcan1 {
 	status = "okay";
+	xceiver-supply = <&reg_can1_stby>;
 };
 
 &flexcan2 {
 	status = "okay";
+	xceiver-supply = <&reg_can2_stby>;
 };
 
 &i2c_mux_som_lcd { /* LCD I2C */
@@ -438,6 +460,12 @@
 	pinctrl_backlight_dsi: backlight-dsi {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO22__TPM5_CH1				0x02
+		>;
+	};
+
+	pinctrl_reg_can1_stby: regcan1stbygrp {
+		fsl,pins = <
+			MX93_PAD_CCM_CLKO2__GPIO3_IO27				0x31e
 		>;
 	};
 
