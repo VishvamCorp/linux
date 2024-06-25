@@ -164,10 +164,6 @@
 				regulator-boot-on;
 				regulator-max-microvolt = <5000000>;
 				regulator-min-microvolt = <1500000>;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
 			};
 
 			reg_ldo4: ldo4 {
@@ -206,10 +202,6 @@
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 				fast-slew = <1>;
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
 			};
 
 			reg_buck5: buck5 {
