@@ -23,13 +23,11 @@
 
 &reg_ldo3 {
 	regulator-always-on;
-	/delete-node/ regulator-state-mem;
 };
 
 &reg_buck4 {
 	dual-phase;
 	regulator-always-on;
-	/delete-node/ regulator-state-mem;
 };
 
 &wdog1 {
