@@ -564,7 +564,7 @@ dtb-$(CONFIG_ARCH_S32) += s32v234-evb.dtb \
 dtb-$(CONFIG_ARCH_MXC) += imx8qm-mek-sof-cs42888.dtb imx8qm-mek-sof-wm8960.dtb \
 			  imx8qm-mek-revd-sof-wm8962.dtb imx8qm-mek-sof.dtb
 
-dtb-$(CONFIG_ARCH_MXC) += imx8mq-nitrogen8m.dtb imx8mq-nitrogen8m-m4.dtb \
+dtb-$(CONFIG_ARCH_MXC) += imx8mq-nitrogen8m.dtb imx8mq-nitrogen8m-rpmsg.dtb \
 			  imx8mq-nitrogen8m-edp.dtb \
 			  imx8mq-nitrogen8m_som.dtb imx8mq-nitrogen8m_som-m4.dtb \
 			  imx8mq-nitrogen8m_som-sd.dtb \
