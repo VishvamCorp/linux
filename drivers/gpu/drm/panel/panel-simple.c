@@ -670,6 +670,8 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 	u32 bus_flags;
 	int err;
 
+	dev_info(dev, "probing simple panel h=%u, w=%u\n", desc->size.height, desc->size.width);
+
 	panel = devm_kzalloc(dev, sizeof(*panel), GFP_KERNEL);
 	if (!panel)
 		return -ENOMEM;
@@ -683,12 +685,18 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 	if (!panel->no_hpd) {
 		err = panel_simple_get_hpd_gpio(dev, panel);
 		if (err)
+		{
+			dev_err(dev, "failed to get HPD GPIO: %d\n", err);
 			return err;
+		}
 	}
 
 	panel->supply = devm_regulator_get(dev, "power");
 	if (IS_ERR(panel->supply))
+	{
+		dev_err(dev, "failed to get power supply\n");
 		return PTR_ERR(panel->supply);
+	}
 
 	panel->enable_gpio = devm_gpiod_get_optional(dev, "enable",
 						     GPIOD_OUT_LOW);
@@ -700,7 +708,8 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 	}
 
 	err = of_drm_get_panel_orientation(dev->of_node, &panel->orientation);
-	if (err) {
+	if (err)
+	{
 		dev_err(dev, "%pOF: failed to get orientation %d\n", dev->of_node, err);
 		return err;
 	}
@@ -720,7 +729,10 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 		/* Handle the generic panel-dpi binding */
 		err = panel_dpi_probe(dev, panel);
 		if (err)
+		{
+			dev_err(dev, "failed to probe panel-dpi: %d\n", err);
 			goto free_ddc;
+		}
 		desc = panel->desc;
 	} else {
 		if (!of_get_display_timing(dev->of_node, "panel-timing", &dt))
@@ -735,6 +747,8 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 		connector_type = DRM_MODE_CONNECTOR_DPI;
 		break;
 	case DRM_MODE_CONNECTOR_LVDS:
+		dev_info(dev, "setup LVDS connector\n");
+
 		WARN_ON(desc->bus_flags &
 			~(DRM_BUS_FLAG_DE_LOW |
 			  DRM_BUS_FLAG_DE_HIGH |
@@ -750,14 +764,20 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 			desc->bpc != 8);
 		break;
 	case DRM_MODE_CONNECTOR_eDP:
+		dev_info(dev, "setup eDP connector\n");
+
 		if (desc->bpc != 6 && desc->bpc != 8 && desc->bpc != 10)
 			dev_warn(dev, "Expected bpc in {6,8,10} but got: %u\n", desc->bpc);
 		break;
 	case DRM_MODE_CONNECTOR_DSI:
+		dev_info(dev, "setup DSI connector\n");
+
 		if (desc->bpc != 6 && desc->bpc != 8)
 			dev_warn(dev, "Expected bpc in {6,8} but got: %u\n", desc->bpc);
 		break;
 	case DRM_MODE_CONNECTOR_DPI:
+		dev_info(dev, "setup DPI connector\n");
+
 		bus_flags = DRM_BUS_FLAG_DE_LOW |
 			    DRM_BUS_FLAG_DE_HIGH |
 			    DRM_BUS_FLAG_PIXDATA_SAMPLE_POSEDGE |
@@ -797,7 +817,10 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 
 	err = drm_panel_of_backlight(&panel->base);
 	if (err)
+	{
+		dev_err(dev, "failed to get backlight: %d\n", err);
 		goto disable_pm_runtime;
+	}
 
 	if (!panel->base.backlight && panel->aux) {
 		pm_runtime_get_sync(dev);
@@ -805,10 +828,15 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
 		pm_runtime_mark_last_busy(dev);
 		pm_runtime_put_autosuspend(dev);
 		if (err)
+		{
+			dev_err(dev, "failed to get backlight while using DP AUX: %d\n", err);
 			goto disable_pm_runtime;
+		}
 	}
 
 	drm_panel_add(&panel->base);
+
+	dev_info(dev, "probed simple panel - success\n");
 
 	return 0;
 
@@ -819,12 +847,15 @@ free_ddc:
 	if (panel->ddc && (!panel->aux || panel->ddc != &panel->aux->ddc))
 		put_device(&panel->ddc->dev);
 
+	dev_err(dev, "probed simple panel - fail\n");
+
 	return err;
 }
 
 static int panel_simple_remove(struct device *dev)
 {
 	struct panel_simple *panel = dev_get_drvdata(dev);
+	dev_info(dev, "removing simple panel\n");
 
 	drm_panel_remove(&panel->base);
 	drm_panel_disable(&panel->base);
@@ -3795,6 +3826,31 @@ static const struct panel_desc qishenglong_gopher2b_lcd = {
 	.connector_type = DRM_MODE_CONNECTOR_DPI,
 };
 
+static const struct drm_display_mode raspberrypi_7inch_mode = {
+	.clock = 25979400 / 1000,
+	.hdisplay = 800,
+	.hsync_start = 800 + 2,
+	.hsync_end = 800 + 2 + 2,
+	.htotal = 800 + 2 + 2 + 46,
+	.vdisplay = 480,
+	.vsync_start = 480 + 7,
+	.vsync_end = 480 + 7 + 2,
+	.vtotal = 480 + 7 + 2 + 21,
+	.flags = DRM_MODE_FLAG_NVSYNC | DRM_MODE_FLAG_NHSYNC,
+};
+
+static const struct panel_desc raspberrypi_7inch = {
+	.modes = &raspberrypi_7inch_mode,
+	.num_modes = 1,
+	.bpc = 8,
+	.size = {
+		.width = 154,
+		.height = 86,
+	},
+	.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+	.connector_type = DRM_MODE_CONNECTOR_DSI,
+};
+
 static const struct display_timing rocktech_rk070er9427_timing = {
 	.pixelclock = { 26400000, 33300000, 46800000 },
 	.hactive = { 800, 800, 800 },
@@ -4877,6 +4933,9 @@ static const struct of_device_id platform_of_match[] = {
 	}, {
 		.compatible = "qishenglong,gopher2b-lcd",
 		.data = &qishenglong_gopher2b_lcd,
+	}, {
+		.compatible = "raspberrypi,7inch-dsi",
+		.data = &raspberrypi_7inch,
 	}, {
 		.compatible = "rocktech,rk070er9427",
 		.data = &rocktech_rk070er9427,

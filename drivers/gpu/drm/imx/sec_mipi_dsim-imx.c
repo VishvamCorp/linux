@@ -427,7 +427,7 @@ static int imx_sec_dsim_probe(struct platform_device *pdev)
 	int ret;
 	struct device *dev = &pdev->dev;
 
-	dev_dbg(dev, "%s: dsim probe begin\n", __func__);
+	dev_info(dev, "%s: dsim probe begin\n", __func__);
 
 	dsim_dev = devm_kzalloc(dev, sizeof(*dsim_dev), GFP_KERNEL);
 	if (!dsim_dev) {
@@ -438,23 +438,38 @@ static int imx_sec_dsim_probe(struct platform_device *pdev)
 
 	dsim_dev->base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(dsim_dev->base))
+	{
+		dev_err(dev, "failed to ioremap dsim base\n");
 		return PTR_ERR(dsim_dev->base);
+	}
 
 	dsim_dev->irq = platform_get_irq(pdev, 0);
 	if (dsim_dev->irq < 0)
+	{
+		dev_err(dev, "failed to get irq, stop\n");
 		return -ENODEV;
+	}
 
 	dsim_dev->clk_cfg = devm_clk_get(dev, "cfg");
 	if (IS_ERR(dsim_dev->clk_cfg))
+	{
+		dev_err(dev, "failed to get cfg clock\n");
 		return PTR_ERR(dsim_dev->clk_cfg);
+	}
 
 	dsim_dev->clk_pllref = devm_clk_get(dev, "pll-ref");
 	if (IS_ERR(dsim_dev->clk_pllref))
+	{
+		dev_err(dev, "failed to get pll-ref clock\n");
 		return PTR_ERR(dsim_dev->clk_pllref);
+	}
 
 	ret = sec_dsim_of_parse_resets(dsim_dev);
 	if (ret)
+	{
+		dev_err(dev, "failed to parse resets\n");
 		return ret;
+	}
 
 	atomic_set(&dsim_dev->rpm_suspended, 1);
 

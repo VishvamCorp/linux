@@ -184,12 +184,18 @@ static int tc358762_parse_dt(struct tc358762 *ctx)
 
 	ret = drm_of_find_panel_or_bridge(dev->of_node, 1, 0, &panel, NULL);
 	if (ret)
+	{
+		dev_err(dev, "failed to get panel or bridge\n");
 		return ret;
+	}
 
 	panel_bridge = devm_drm_panel_bridge_add(dev, panel);
 
 	if (IS_ERR(panel_bridge))
+	{
+		dev_err(dev, "failed to add panel bridge\n");
 		return PTR_ERR(panel_bridge);
+	}
 
 	ctx->panel_bridge = panel_bridge;
 
@@ -200,7 +206,10 @@ static int tc358762_configure_regulators(struct tc358762 *ctx)
 {
 	ctx->regulator = devm_regulator_get(ctx->dev, "vddc");
 	if (IS_ERR(ctx->regulator))
+	{
+		dev_err(ctx->dev, "failed to get vddc regulator\n");
 		return PTR_ERR(ctx->regulator);
+	}
 
 	return 0;
 }
@@ -211,9 +220,14 @@ static int tc358762_probe(struct mipi_dsi_device *dsi)
 	struct tc358762 *ctx;
 	int ret;
 
+	dev_info(dev, "Probing Toshiba TC358762 DSI/DPI bridge\n");
+
 	ctx = devm_kzalloc(dev, sizeof(struct tc358762), GFP_KERNEL);
 	if (!ctx)
+	{
+		dev_err(dev, "failed to allocate context\n");
 		return -ENOMEM;
+	}
 
 	mipi_dsi_set_drvdata(dsi, ctx);
 
