@@ -8,9 +8,11 @@
 
 /dts-v1/;
 
-#include <dt-bindings/usb/pd.h>
 #include <dt-bindings/interconnect/ti,ds90ub635.h>
 #include <dt-bindings/interconnect/ti,ds90ub638.h>
+
+#include <dt-bindings/phy/phy-imx8-pcie.h>
+#include <dt-bindings/usb/pd.h>
 #include "imx8mp-nitrogen8mp-som.dtsi"
 
 &iomuxc {
@@ -301,11 +303,11 @@
 
 	aliases {
 		fb_hdmi = &lcdif3;
-		lcdif = &lcdif1;
+		// lcdif = &lcdif1;
 		// mipi_dsi = &mipi_dsi;
 		// fb_mipi = &fb_mipi;
 		// mipi_fb = &fb_mipi;
-		pwm_mipi = &pwm1;
+		// pwm_mipi = &pwm1;
 		// ts_ft5x06 = &ts_ft5x06;
 
 	};
@@ -355,70 +357,6 @@
 
 	sound-wm8960 {
 		status = "disabled";
-	};
-
-	simple_bus_top: simple-bus@2 {
-		compatible = "simple-bus";
-		#address-cells = <2>;
-		#size-cells = <1>;
-		// ranges;
-
-		simple_bus_inner: simple-bus@3 {
-			compatible = "simple-bus";
-			#address-cells = <1>;
-			#size-cells = <0>;
-			// ranges;
-
-			panel_bridge: bridge@0 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "toshiba,tc358762";
-				reg = <0>;
-				vddc-supply = <&attiny>;
-				status = "okay";
-
-				ports {
-					#address-cells = <1>;
-					#size-cells = <0>;
-
-					port@0 {
-						reg = <0>;
-
-						bridge_in: endpoint {
-							remote-endpoint = <&dsi_out>;
-						};
-					};
-
-					port@1 {
-						reg = <1>;
-
-						bridge_out: endpoint {
-							remote-endpoint = <&panel_in>;
-						};
-					};
-				};
-			};
-		};
-	};
-
-
-	fb_mipi: panel@1 {
-		compatible = "raspberrypi,7inch-dsi";
-		power-supply = <&attiny>;
-		backlight = <&attiny>;
-		status = "okay";
-
-		/* No need for panel-simple, but let it be like in original dtsi */
-		clocks = <&mipi_dsi 0>, <&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
-		clock-names = "mipi_clk", "pixel_clock";
-
-		no-hpd;
-
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&bridge_out>;
-			};
-		};
 	};
 
 	csi_mclk: csi-mclk {
@@ -663,49 +601,6 @@
 			reg = <3>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-
-			/* Display I2C */
-			/* Touch screens */
-			// ts_ft5x06: touchscreen@38 {
-			// 	status = "okay";
-			// 	compatible = "edt,ft5x06-ts";
-			// 	reg = <0x38>;
-			// 	screen-size = <800 480>;
-
-			// 	// display = <&display_subsystem>;
-
-			// 	// vcc-supply = <&reg_display>;
-			// 	// reset-gpio = <&reg_display 1 1>;
-
-			// 	/* We do not have one on this board, but we have to set it */
-			// 	wakeup-gpios = <&gpio4 2 GPIO_ACTIVE_HIGH>; /* Fake. Free on current board. */
-			// 	interrupts-extended = <&gpio4 3 IRQ_TYPE_EDGE_FALLING>; /* Fake. Free on current board. */
-			// };
-
-			attiny: regulator@45 {
-				compatible = "raspberrypi,7inch-touchscreen-panel-regulator";
-				reg = <0x45>;
-			};
-
-			// display_7inch: lcd@45 {
-			// 	status = "okay";
-			// 	compatible = "raspberrypi,7inch-touchscreen-panel";
-			// 	reg = <0x45>;
-
-			// 	port {
-			// 		panel_dsi_port: endpoint {
-			// 			remote-endpoint = <&dsi_out_port>;
-			// 		};
-			// 	};
-			// };
-
-			// reg_display: reg_display@45 {
-			// 	compatible = "raspberrypi,7inch-touchscreen-panel-regulator";
-			// 	reg = <0x45>;
-			// 	gpio-controller;
-			// 	#gpio-cells = <2>;
-			// };
-
 		};
 	};
 };
@@ -1195,33 +1090,8 @@
 	};
 };
 
-&lcdif1 {
-	display = <&fb_mipi>;
-	status = "okay";
-};
-
 &media_blk_ctrl {
 	status = "okay";
-};
-
-&mipi_dsi {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	status = "okay";
-
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@1 {
-			reg = <1>;
-
-			dsi_out: endpoint {
-				remote-endpoint = <&bridge_in>;
-				attach-bridge;
-			};
-		};
-	};
 };
 
 &mix_gpu_ml {
