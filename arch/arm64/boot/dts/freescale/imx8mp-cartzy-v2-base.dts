@@ -303,13 +303,13 @@
 
 	aliases {
 		fb_hdmi = &lcdif3;
-		// lcdif = &lcdif1;
+		lcdif = &lcdif1;
 		// mipi_dsi = &mipi_dsi;
-		// fb_mipi = &fb_mipi;
+		// mipi_dsi_bridge = &mipi_dsi;
+		// mipi = &fb_mipi;
 		// mipi_fb = &fb_mipi;
 		// pwm_mipi = &pwm1;
 		// ts_ft5x06 = &ts_ft5x06;
-
 	};
 
 	chosen {
