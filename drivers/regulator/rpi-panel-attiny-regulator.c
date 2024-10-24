@@ -180,6 +180,7 @@ static const struct regulator_desc attiny_regulator = {
 	.ops	= &attiny_regulator_ops,
 	.type	= REGULATOR_VOLTAGE,
 	.owner	= THIS_MODULE,
+	.min_uV = 3300000,
 };
 
 static int attiny_update_status(struct backlight_device *bl)
@@ -292,6 +293,8 @@ static int attiny_i2c_probe(struct i2c_client *i2c)
 	unsigned int data;
 	int ret;
 
+	dev_dbg(&i2c->dev, "Probing RPi 7-inch touchscreen panel regulator\n");
+
 	state = devm_kzalloc(&i2c->dev, sizeof(*state), GFP_KERNEL);
 	if (!state)
 		return -ENOMEM;
@@ -349,6 +352,7 @@ static int attiny_i2c_probe(struct i2c_client *i2c)
 					    &i2c->dev, state, &attiny_bl,
 					    &props);
 	if (IS_ERR(bl)) {
+		dev_err(&i2c->dev, "Failed to register backlight device\n");
 		ret = PTR_ERR(bl);
 		goto error;
 	}
@@ -371,9 +375,13 @@ static int attiny_i2c_probe(struct i2c_client *i2c)
 		goto error;
 	}
 
+	dev_dbg(&i2c->dev, "Probe: Success\n");
+
 	return 0;
 
 error:
+	dev_err(&i2c->dev, "Probe: Failed\n");
+
 	mutex_destroy(&state->lock);
 
 	return ret;

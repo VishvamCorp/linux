@@ -302,13 +302,9 @@
 	compatible = "fsl,imx8mp-custom-board", "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
 
 	aliases {
-		fb_hdmi = &lcdif3;
-		lcdif = &lcdif1;
-		// mipi_dsi = &mipi_dsi;
-		// mipi_dsi_bridge = &mipi_dsi;
-		// mipi = &fb_mipi;
-		// mipi_fb = &fb_mipi;
-		// pwm_mipi = &pwm1;
+		// fb_hdmi = &lcdif3;
+		// lcdif = &lcdif1;
+		// fb_mipi = &fb_mipi;
 		// ts_ft5x06 = &ts_ft5x06;
 	};
 
@@ -1179,6 +1175,4 @@
 	vqmmc-1-8-v;
 	vqmmc-supply = <&reg_vref_1v8>;
 };
-
-
 
