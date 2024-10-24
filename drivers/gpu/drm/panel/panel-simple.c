@@ -566,8 +566,10 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 	panel->desc = desc;
 
 	panel->supply = devm_regulator_get(dev, "power");
-	if (IS_ERR(panel->supply))
+	if (IS_ERR(panel->supply)) {
+		dev_err(dev, "failed to get power supply\n");
 		return PTR_ERR(panel->supply);
+	}
 
 	panel->enable_gpio = devm_gpiod_get_optional(dev, "enable",
 						     GPIOD_OUT_LOW);
@@ -677,12 +679,16 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 
 	drm_panel_add(&panel->base);
 
+	dev_dbg(dev, "panel initialized\n");
+
 	return 0;
 
 disable_pm_runtime:
 	pm_runtime_dont_use_autosuspend(dev);
 	pm_runtime_disable(dev);
 free_ddc:
+	dev_err(dev, "failed to initialize panel: %d\n", err);
+
 	if (panel->ddc)
 		put_device(&panel->ddc->dev);
 
@@ -4941,6 +4947,8 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	const struct panel_desc_dsi *desc;
 	int err;
 
+	dev_dbg(&dsi->dev, "Probing panel\n");
+
 	desc = of_device_get_match_data(&dsi->dev);
 	if (!desc)
 		return -ENODEV;
@@ -4955,9 +4963,12 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 
 	err = mipi_dsi_attach(dsi);
 	if (err) {
+		dev_err(&dsi->dev, "failed to attach DSI device: %d\n", err);
 		struct panel_simple *panel = mipi_dsi_get_drvdata(dsi);
 
 		drm_panel_remove(&panel->base);
+	} else {
+		dev_dbg(&dsi->dev, "Probe: Success\n");
 	}
 
 	return err;

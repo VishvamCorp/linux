@@ -261,6 +261,8 @@ static int tc358762_probe(struct mipi_dsi_device *dsi)
 	struct tc358762 *ctx;
 	int ret;
 
+	dev_dbg(dev, "Probing TC358762 DSI/DPI bridge\n");
+
 	ctx = devm_kzalloc(dev, sizeof(struct tc358762), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
@@ -277,12 +279,16 @@ static int tc358762_probe(struct mipi_dsi_device *dsi)
 			  MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_VIDEO_HSE;
 
 	ret = tc358762_parse_dt(ctx);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(dev, "failed to parse device tree\n");
 		return ret;
+	}
 
 	ret = tc358762_configure_regulators(ctx);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(dev, "failed to configure regulators\n");
 		return ret;
+	}
 
 	ctx->bridge.funcs = &tc358762_bridge_funcs;
 	ctx->bridge.type = DRM_MODE_CONNECTOR_DPI;
@@ -295,6 +301,8 @@ static int tc358762_probe(struct mipi_dsi_device *dsi)
 	if (ret < 0) {
 		drm_bridge_remove(&ctx->bridge);
 		dev_err(dev, "failed to attach dsi\n");
+	} else {
+		dev_dbg(dev, "Probe: Success\n");
 	}
 
 	return ret;
