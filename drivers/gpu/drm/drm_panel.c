@@ -301,12 +301,27 @@ int drm_panel_get_modes(struct drm_panel *panel,
 	if (!panel)
 		return 0;
 
+	if (IS_ERR(panel)) {
+		printk(KERN_ERR "%s: [DRM] Got panel error (%ld)\n",
+		       __func__, PTR_ERR(panel));
+		return PTR_ERR(panel);
+	}
+
+	if (IS_ERR_OR_NULL(panel->dev)) {
+		return 0;
+	}
+
 	if (panel->funcs && panel->funcs->get_modes) {
 		int num;
-
 		num = panel->funcs->get_modes(panel, connector);
-		if (num > 0)
-			return num;
+
+		if (num < 0) {
+			dev_err(panel->dev, "failed to get modes from panel: %d\n",
+				num);
+			return 0;
+		}
+
+		return num;
 	}
 
 	return 0;

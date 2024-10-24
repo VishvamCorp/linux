@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2023 Gateworks Corporation
- * Copyright 2024 Vishvam Corporation
+ * Update 2024 Vishvam Corporation
  */
 
 /dts-v1/;
@@ -10,26 +10,31 @@
 &{/} {
 	compatible = "fsl,imx8mp-custom-board", "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
 
-	panel {
-		compatible = "powertip,ph800480t013-idf02";
-		power-supply = <&attiny>;
-		backlight = <&attiny>;
+    fb_mipi: panel {
+    	compatible = "powertip,ph800480t013-idf02";
+        power-supply = <&attiny>;
+        backlight = <&attiny>;
+        rotation = <180>; /* Rotate 180 degrees */
 
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&bridge_out>;
-			};
-		};
-	};
+        status = "okay";
+
+        port {
+            panel_in: endpoint {
+                remote-endpoint = <&bridge_out>;
+            };
+        };
+    };
 };
 
 &i2c2d {
 	#address-cells = <1>;
 	#size-cells = <0>;
+    status = "okay";
 
 	attiny: regulator@45 {
 		compatible = "raspberrypi,7inch-touchscreen-panel-regulator";
 		reg = <0x45>;
+        status = "okay";
 	};
 };
 
@@ -49,6 +54,7 @@
 		compatible = "toshiba,tc358762";
 		reg = <0>;
 		vddc-supply = <&attiny>;
+        status = "okay";
 
 		ports {
 			#address-cells = <1>;
@@ -72,17 +78,11 @@
 		};
 	};
 
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@1 {
-			reg = <1>;
-
-			dsi_out: endpoint {
-				data-lanes = <1 2>;
-				remote-endpoint = <&bridge_in>;
-			};
+	port@1 {
+		dsi_out: endpoint {
+			data-lanes = <1 2>;
+			remote-endpoint = <&bridge_in>;
+			attach-bridge;
 		};
 	};
 };

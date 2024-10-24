@@ -445,7 +445,7 @@ static const struct dsim_hblank_par *sec_mipi_dsim_get_hblank_par(const char *na
 		size   = ARRAY_SIZE(hblank_4lanes);
 		break;
 	default:
-		pr_err("No hblank data for mode %s with %d lanes\n",
+		pr_warn("No hblank data for mode %s with %d lanes\n",
 		       name, lanes);
 		return NULL;
 	}
@@ -637,10 +637,8 @@ static int sec_mipi_dsim_host_attach(struct mipi_dsi_host *host,
 				dsim->bridge = NULL;
 			} else {
 				/* Don't support multiple bridges */
-				if (dsim->bridge && bridge &&
-				    dsim->bridge != bridge) {
-					dev_err(dev,
-						"don't support multiple bridges\n");
+				if (dsim->bridge && bridge && dsim->bridge != bridge) {
+					dev_err(dev, "don't support multiple bridges\n");
 					return -EBUSY;
 				}
 
@@ -649,9 +647,7 @@ static int sec_mipi_dsim_host_attach(struct mipi_dsi_host *host,
 		}
 
 		if (!dsim->panel && !dsim->bridge) {
-			dev_err(dev,
-				"refuse unknown dsi device attach: panel (%pe), bridge (%pe)\n",
-				panel, bridge);
+			dev_err(dev, "refuse unknown dsi device attach: panel (%pe), bridge (%pe)\n", panel, bridge);
 			return -ENODEV;
 		}
 	}
@@ -2331,12 +2327,13 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 	/* attach sec dsim bridge and its next bridge if exists */
 	ret = drm_bridge_attach(encoder, bridge, NULL, 0);
 	if (ret) {
-		dev_err(dev, "Failed to attach bridge: %s\n", dev_name(dev));
-
 		/* no bridge exists, so defer probe to wait
 		 * panel driver loading
 		 */
 		if (ret != -EPROBE_DEFER) {
+			dev_warn(dev, "Failed to attach bridge: %s (%pe)\n",
+				dev_name(dev), ERR_PTR(ret));
+
 			for_each_available_child_of_node(dev->of_node, node) {
 				/* skip nodes without reg property */
 				if (!of_find_property(node, "reg", NULL))
