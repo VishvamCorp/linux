@@ -12,10 +12,17 @@ menuconfig LOGO
 if LOGO
 
 config FB_LOGO_EXTRA
-	bool
-	depends on FB=y
+	bool "Show an extra logo at bootup"
+	depends on FB
 	default y if SPU_BASE
 
+config LOGO_CUSTOM
+	bool "Custom boot logo"
+	default n
+	help
+	  Enable this to use a custom 224-color Linux logo. This will disable the standard 224-color Linux logo.
+
+if !LOGO_CUSTOM
 config LOGO_LINUX_MONO
 	bool "Standard black and white Linux logo"
 	default y
@@ -67,5 +74,16 @@ config LOGO_SUPERH_CLUT224
 	bool "224-color SuperH Linux logo"
 	depends on SUPERH
 	default y
+
+endif # !LOGO_CUSTOM
+
+if LOGO_CUSTOM
+config LOGO_CUSTOM_CLUT224
+	bool "Custom 224-color Linux logo"
+	depends on LOGO_CUSTOM
+	default y
+	help
+	  Enable this to use a custom 224-color Linux logo. This will disable the standard 224-color Linux logo.
+endif # LOGO_CUSTOM
 
 endif # LOGO

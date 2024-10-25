@@ -8,6 +8,7 @@
  *  Copyright (C) 2001 Greg Banks <gnb@alphalink.com.au>
  *  Copyright (C) 2001 Jan-Benedict Glaw <jbglaw@lug-owl.de>
  *  Copyright (C) 2003 Geert Uytterhoeven <geert@linux-m68k.org>
+ *  Copyright (C) 2024 Nikita Bulaev <djfirebull@gmail.com>
  */
 
 #include <linux/linux_logo.h>
@@ -49,56 +50,67 @@ const struct linux_logo * __ref fb_find_logo(int depth)
 		return NULL;
 
 	if (depth >= 1) {
-#ifdef CONFIG_LOGO_LINUX_MONO
+#ifndef CONFIG_LOGO_CUSTOM
+	#ifdef CONFIG_LOGO_LINUX_MONO
 		/* Generic Linux logo */
 		logo = &logo_linux_mono;
-#endif
-#ifdef CONFIG_LOGO_SUPERH_MONO
+	#endif
+	#ifdef CONFIG_LOGO_SUPERH_MONO
 		/* SuperH Linux logo */
 		logo = &logo_superh_mono;
+	#endif
 #endif
 	}
-	
+
 	if (depth >= 4) {
-#ifdef CONFIG_LOGO_LINUX_VGA16
+#ifndef CONFIG_LOGO_CUSTOM
+	#ifdef CONFIG_LOGO_LINUX_VGA16
 		/* Generic Linux logo */
 		logo = &logo_linux_vga16;
-#endif
-#ifdef CONFIG_LOGO_SUPERH_VGA16
+	#endif
+	#ifdef CONFIG_LOGO_SUPERH_VGA16
 		/* SuperH Linux logo */
 		logo = &logo_superh_vga16;
+	#endif
 #endif
 	}
-	
+
 	if (depth >= 8) {
-#ifdef CONFIG_LOGO_LINUX_CLUT224
+#ifndef CONFIG_LOGO_CUSTOM
+	#ifdef CONFIG_LOGO_LINUX_CLUT224
 		/* Generic Linux logo */
 		logo = &logo_linux_clut224;
-#endif
-#ifdef CONFIG_LOGO_DEC_CLUT224
+	#endif
+	#ifdef CONFIG_LOGO_DEC_CLUT224
 		/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
 		logo = &logo_dec_clut224;
-#endif
-#ifdef CONFIG_LOGO_MAC_CLUT224
+	#endif
+	#ifdef CONFIG_LOGO_MAC_CLUT224
 		/* Macintosh Linux logo on m68k */
 		if (MACH_IS_MAC)
 			logo = &logo_mac_clut224;
-#endif
-#ifdef CONFIG_LOGO_PARISC_CLUT224
+	#endif
+	#ifdef CONFIG_LOGO_PARISC_CLUT224
 		/* PA-RISC Linux logo */
 		logo = &logo_parisc_clut224;
-#endif
-#ifdef CONFIG_LOGO_SGI_CLUT224
+	#endif
+	#ifdef CONFIG_LOGO_SGI_CLUT224
 		/* SGI Linux logo on MIPS/MIPS64 */
 		logo = &logo_sgi_clut224;
-#endif
-#ifdef CONFIG_LOGO_SUN_CLUT224
+	#endif
+	#ifdef CONFIG_LOGO_SUN_CLUT224
 		/* Sun Linux logo */
 		logo = &logo_sun_clut224;
-#endif
-#ifdef CONFIG_LOGO_SUPERH_CLUT224
+	#endif
+	#ifdef CONFIG_LOGO_SUPERH_CLUT224
 		/* SuperH Linux logo */
 		logo = &logo_superh_clut224;
+	#endif
+#else
+	#ifdef CONFIG_LOGO_CUSTOM_CLUT224
+		/* Custom Linux logo */
+		logo = &logo_custom_clut224;
+	#endif
 #endif
 	}
 	return logo;
