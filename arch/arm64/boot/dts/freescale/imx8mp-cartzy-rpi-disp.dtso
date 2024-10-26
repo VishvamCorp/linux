@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2023 Gateworks Corporation
+ * Update 2024 Vishvam Corporation
+ */
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	compatible = "fsl,imx8mp-custom-board", "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
+
+    fb_mipi: panel {
+    	compatible = "powertip,ph800480t013-idf02";
+        power-supply = <&attiny>;
+        backlight = <&attiny>;
+        rotation = <180>; /* Rotate 180 degrees */
+
+        status = "okay";
+
+        port {
+            panel_in: endpoint {
+                remote-endpoint = <&bridge_out>;
+            };
+        };
+    };
+};
+
+&i2c2d {
+	#address-cells = <1>;
+	#size-cells = <0>;
+    status = "okay";
+
+	attiny: regulator@45 {
+		compatible = "raspberrypi,7inch-touchscreen-panel-regulator";
+		reg = <0x45>;
+        status = "okay";
+        gpio-controller;
+        #gpio-cells = <2>;
+	};
+
+	ts_ft5x06: touchscreen@38 {
+		compatible = "edt,edt-ft5406";
+		reg = <0x38>;
+		status = "okay";
+
+		touchscreen-size-x = <800>;
+		touchscreen-size-y = <480>;
+
+		vcc-supply = <&attiny>;
+		reset-gpio = <&attiny 1 1>;
+
+		/* The following properties are optional */
+		// touchscreen-inverted-x;
+		// touchscreen-inverted-y;
+		// touchscreen-swapped-x-y;
+
+		/* raspberrypi,7inch-touchscreen-panel doesn't have a wakeup line
+		 * so we do not have interrupt-gpios to read the data.
+		 * This panel will run in polling mode.
+		 */
+	};
+};
+
+&lcdif1 {
+	status = "okay";
+};
+
+&mipi_dsi {
+	samsung,burst-clock-frequency = <891000000>;
+	samsung,esc-clock-frequency = <54000000>;
+	samsung,pll-clock-frequency = <27000000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	bridge@0 {
+		compatible = "toshiba,tc358762";
+		reg = <0>;
+		vddc-supply = <&attiny>;
+        status = "okay";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				bridge_in: endpoint {
+					remote-endpoint = <&dsi_out>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+
+				bridge_out: endpoint {
+					remote-endpoint = <&panel_in>;
+				};
+			};
+		};
+	};
+
+	port@1 {
+		dsi_out: endpoint {
+			data-lanes = <1 2>;
+			remote-endpoint = <&bridge_in>;
+			attach-bridge;
+		};
+	};
+};
