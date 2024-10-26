@@ -35,6 +35,30 @@
 		compatible = "raspberrypi,7inch-touchscreen-panel-regulator";
 		reg = <0x45>;
         status = "okay";
+        gpio-controller;
+        #gpio-cells = <2>;
+	};
+
+	ts_ft5x06: touchscreen@38 {
+		compatible = "edt,edt-ft5406";
+		reg = <0x38>;
+		status = "okay";
+
+		touchscreen-size-x = <800>;
+		touchscreen-size-y = <480>;
+
+		vcc-supply = <&attiny>;
+		reset-gpio = <&attiny 1 1>;
+
+		/* The following properties are optional */
+		// touchscreen-inverted-x;
+		// touchscreen-inverted-y;
+		// touchscreen-swapped-x-y;
+
+		/* raspberrypi,7inch-touchscreen-panel doesn't have a wakeup line
+		 * so we do not have interrupt-gpios to read the data.
+		 * This panel will run in polling mode.
+		 */
 	};
 };
 
