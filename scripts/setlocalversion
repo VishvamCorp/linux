@@ -11,29 +11,45 @@
 #
 
 usage() {
-	echo "Usage: $0 [--no-local] [srctree]" >&2
+	echo "Usage: $0 [--no-local] [--short] [--no-dirty] [srctree]" >&2
 	exit 1
 }
 
 no_local=false
-if test "$1" = "--no-local"; then
-	no_local=true
-	shift
-fi
+short=false
+no_dirty=false
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--no-local)
+			no_local=true
+			shift
+			;;
+		--short)
+			short=true
+			shift
+			;;
+		--no-dirty)
+			no_dirty=true
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
+done
 
 srctree=.
-if test $# -gt 0; then
+if [ $# -gt 0 ]; then
 	srctree=$1
 	shift
 fi
-if test $# -gt 0 -o ! -d "$srctree"; then
+if [ $# -gt 0 ] || [ ! -d "$srctree" ]; then
 	usage
 fi
 
 scm_version()
 {
-	local short=false
-	local no_dirty=false
 	local tag
 
 	while [ $# -gt 0 ];
@@ -47,7 +63,7 @@ scm_version()
 		shift
 	done
 
-	cd "$srctree"
+	cd "$srctree" || exit
 
 	if test -n "$(git rev-parse --show-cdup 2>/dev/null)"; then
 		return
@@ -67,7 +83,7 @@ scm_version()
 	tag=${file_localversion#-}
 	desc=
 	if [ -n "${tag}" ]; then
-		desc=$(git describe --match=$tag 2>/dev/null)
+		desc=$(git describe --match="$tag" 2>/dev/null)
 	fi
 
 	# Otherwise, if a localversion* file exists, and the tag
@@ -76,13 +92,13 @@ scm_version()
 	# it. This is e.g. the case in linux-rt.
 	if [ -z "${desc}" ] && [ -n "${file_localversion}" ]; then
 		tag="${version_tag}${file_localversion}"
-		desc=$(git describe --match=$tag 2>/dev/null)
+		desc=$(git describe --match="$tag" 2>/dev/null)
 	fi
 
 	# Otherwise, default to the annotated tag derived from KERNELVERSION.
 	if [ -z "${desc}" ]; then
 		tag="${version_tag}"
-		desc=$(git describe --match=$tag 2>/dev/null)
+		desc=$(git describe --match="$tag" 2>/dev/null)
 	fi
 
 	# If we are at the tagged commit, we ignore it because the version is
