@@ -8,6 +8,20 @@ Kernel tree for Ezurio (ex-Boundary Devices) platforms.
 * The 5.15.x kernel is in branch [cartzy-if-5.15.y][cartzy-if-5.15.y]
 * The 6.6.x kernel is in branch [cartzy-if-6.6.y][cartzy-if-6.6.y]
 
+## Versionning
+Increment number in `localversion` file to match the kernel version before releasing a new kernel.
+Set `CONFIG_LOCALVERSION` in the kernel configuration to needed value.
+
+Example:
+```
+Kernel `6.6.23`.
+Print `.02` in the localversion file.
+Set `CONFIG_LOCALVERSION` to `ezcart` in the kernel configuration.
+We will get `6.6.23.02-ezcart+`
+```
+
+**Note**: Increment `localversion` before starting the build process, you will be able to fix or update needed code and then push the changes without additional version checks.
+
 # Nitrogen (NXP i.MX-based) platforms
 
 This section targets the following platforms:
