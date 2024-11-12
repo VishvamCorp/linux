@@ -298,15 +298,8 @@
 };
 
 / {
-	model = "Boundary i.MX8MPlus SOM + EzCart control board V1.0";
+	model = "Ezurio i.MX8MPlus SOM + EzCart control board V1.0";
 	compatible = "fsl,imx8mp-custom-board", "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
-
-	aliases {
-		// fb_hdmi = &lcdif3;
-		// lcdif = &lcdif1;
-		// fb_mipi = &fb_mipi;
-		// ts_ft5x06 = &ts_ft5x06;
-	};
 
 	chosen {
 		stdout-path = &uart2;
