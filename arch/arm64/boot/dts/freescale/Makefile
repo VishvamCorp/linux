@@ -589,9 +589,13 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mp-nitrogen8mp.dtb imx8mp-nitrogen8mp-rpmsg.dtb \
 
 # Cartzy EzCart
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v1.dtb
+# imx8mp-cartzy-v1-m7-dtbs := imx8mp-cartzy-v1.dtb imx8mp-cartzy-m7.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v1-m7.dtb
 
 imx8mp-cartzy-v2-disp-dtbs := imx8mp-cartzy-v2-base.dtb imx8mp-cartzy-rpi-disp.dtbo
+imx8mp-cartzy-v2-m7-disp-dtbs := imx8mp-cartzy-v2-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v2-disp.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v2-m7-disp.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx93-nitrogen-smarc.dtb \
 			  imx93-nitrogen-smarc-rpmsg.dtb \
