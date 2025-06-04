@@ -138,6 +138,7 @@ struct imx6_pcie {
 	struct clk		*pcie_inbound_axi;
 	struct clk		*pcie;
 	struct clk		*pcie_aux;
+	struct clk		*pcie_ref;
 	struct regmap		*iomuxc_gpr;
 	u16			msi_ctrl;
 	u32			controller_id;
@@ -226,6 +227,7 @@ struct imx6_pcie {
 #define CTRL2_PM_XMT_TURNOFF			BIT(9)
 #define STTS0_PM_LINKST_IN_L2			BIT(13)
 
+static int imx6_pcie_cz_enabled;
 static unsigned int imx6_pcie_grp_offset(const struct imx6_pcie *imx6_pcie)
 {
 	WARN_ON(imx6_pcie->drvdata->variant != IMX8MQ &&
@@ -762,12 +764,24 @@ static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 		}
 		break;
 	case IMX95:
-	case IMX95_EP:
 		ret = clk_prepare_enable(imx6_pcie->pcie_aux);
 		if (ret) {
 			dev_err(dev, "unable to enable pcie_aux clock\n");
 			break;
 		}
+		if (imx6_pcie->refclk_pad_mode == IMX8_PCIE_REFCLK_PAD_OUTPUT) {
+			ret = clk_prepare_enable(imx6_pcie->pcie_ref);
+			if (ret) {
+				dev_err(dev, "unable to enable ref clock\n");
+				clk_disable_unprepare(imx6_pcie->pcie_aux);
+				break;
+			}
+		}
+		break;
+	case IMX95_EP:
+		ret = clk_prepare_enable(imx6_pcie->pcie_aux);
+		if (ret)
+			dev_err(dev, "unable to enable pcie_aux clock\n");
 		break;
 	}
 
@@ -797,6 +811,11 @@ static void imx6_pcie_disable_ref_clk(struct imx6_pcie *imx6_pcie)
 				   IMX7D_GPR12_PCIE_PHY_REFCLK_SEL,
 				   IMX7D_GPR12_PCIE_PHY_REFCLK_SEL);
 		break;
+	case IMX95:
+		if (imx6_pcie->refclk_pad_mode == IMX8_PCIE_REFCLK_PAD_OUTPUT)
+			clk_disable_unprepare(imx6_pcie->pcie_ref);
+		fallthrough;
+	case IMX95_EP:
 	case IMX8MM:
 	case IMX8MM_EP:
 	case IMX8MQ:
@@ -1125,12 +1144,14 @@ static int imx6_pcie_start_link(struct dw_pcie *pci)
 	 * started in Gen2 mode, there is a possibility the devices on the
 	 * bus will not be detected at all.  This happens with PCIe switches.
 	 */
-	dw_pcie_dbi_ro_wr_en(pci);
-	tmp = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
-	tmp &= ~PCI_EXP_LNKCAP_SLS;
-	tmp |= PCI_EXP_LNKCAP_SLS_2_5GB;
-	dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, tmp);
-	dw_pcie_dbi_ro_wr_dis(pci);
+	if (!imx6_pcie_cz_enabled) {
+		dw_pcie_dbi_ro_wr_en(pci);
+		tmp = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
+		tmp &= ~PCI_EXP_LNKCAP_SLS;
+		tmp |= PCI_EXP_LNKCAP_SLS_2_5GB;
+		dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, tmp);
+		dw_pcie_dbi_ro_wr_dis(pci);
+	}
 
 	/* Start LTSSM. */
 	imx6_pcie_ltssm_enable(dev);
@@ -1474,6 +1495,11 @@ static void imx6_pcie_host_exit(struct dw_pcie_rp *pp)
 {
 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pci);
+
+	if (imx6_pcie_cz_enabled) {
+		pr_info("PCIe compliance tests mode is enabled.\n");
+		return;
+	}
 
 	if (imx6_pcie->phy) {
 		if (phy_power_off(imx6_pcie->phy))
@@ -1828,6 +1854,17 @@ irqreturn_t host_wake_irq_handler(int irq, void *priv)
 	return IRQ_HANDLED;
 }
 
+static int __init __maybe_unused imx6_pcie_compliance_test_enable(char *str)
+{
+	if (!strcmp(str, "yes")) {
+		pr_info("Enable the i.MX PCIe compliance tests mode.\n");
+		imx6_pcie_cz_enabled = 1;
+	}
+	return 1;
+}
+
+__setup("pcie_cz_enabled=", imx6_pcie_compliance_test_enable);
+
 static int imx6_pcie_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1992,6 +2029,11 @@ static int imx6_pcie_probe(struct platform_device *pdev)
 
 		break;
 	case IMX95:
+		imx6_pcie->pcie_ref = devm_clk_get(dev, "ref");
+		if (IS_ERR(imx6_pcie->pcie_ref))
+			return dev_err_probe(dev, PTR_ERR(imx6_pcie->pcie_ref),
+					     "pcie_ref clock source missing or invalid\n");
+		fallthrough;
 	case IMX95_EP:
 		if (dbi_base->start == IMX95_PCIE2_BASE_ADDR)
 			imx6_pcie->controller_id = 1;

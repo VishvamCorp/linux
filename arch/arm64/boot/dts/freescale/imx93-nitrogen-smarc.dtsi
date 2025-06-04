@@ -12,8 +12,10 @@
 
 / {
 	aliases {
-		ethernet0 = &eqos;
-		ethernet1 = &fec;
+		eth0 = &eqos;
+		eth1 = &fec;
+		spi0 = &lpspi3;
+		spi1 = &lpspi1;
 	};
 
 	chosen {
@@ -360,10 +362,11 @@
 };
 
 &lpspi1 { /* SPI1 */
-	fsl,spi-num-chipselects = <1>;
+	fsl,spi-num-chipselects = <2>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_lpspi1>;
 	pinctrl-1 = <&pinctrl_lpspi1>;
+	cs-gpios = <0>, <&pcal6534 7 GPIO_ACTIVE_HIGH>;
 	status = "disabled";
 };
 
@@ -464,7 +467,9 @@
 	non-removable;
 	wakeup-source;
 	pm-ignore-notify;
-	fsl,sdio-async-interrupt-enabled;
+	voltage-ranges = <1800 1800>;
+	fsl,tuning-start-tap = <20>;
+	fsl,tuning-step= <2>;
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
 	vqmmc-supply = <&reg_vref_1v8>;
@@ -494,7 +499,6 @@
 &iomuxc {
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
-			MX93_PAD_CCM_CLKO1__GPIO3_IO26                          0x31e /* CSI0_EN */
 			MX93_PAD_ENET1_MDC__ENET_QOS_MDC			0x57e
 			MX93_PAD_ENET1_MDIO__ENET_QOS_MDIO			0x57e
 			MX93_PAD_ENET1_RD0__ENET_QOS_RGMII_RD0			0x37e

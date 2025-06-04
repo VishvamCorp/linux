@@ -2207,6 +2207,7 @@ static struct clk *sec_mipi_dsim_clk_register_clk(struct sec_mipi_dsim *dsim)
 
 	/* optional override of the clockname */
 	of_property_read_string(dsim->dev->of_node, "clock-output-names", &init.name);
+	of_property_read_string(dsim->dev->of_node, "clock-pllref-name", &parents[0]);
 
 	/* register the clock */
 	clk = clk_register(dsim->dev, &dsim->dsi_clk_hw);
@@ -2262,7 +2263,7 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 		dev_err(dev, "Unable to get configuration clock: %d\n", ret);
 		return ret;
 	}
-	dsim->clk_pixel = devm_clk_get(dev, "pixel_clock");
+	dsim->clk_pixel = devm_clk_get(dev, "pixel");
 	if (IS_ERR(dsim->clk_pixel)) {
 		dev_warn(dev, "Unable to get pixel clock: %ld\n", PTR_ERR(dsim->clk_pixel));
 		dsim->clk_pixel = NULL;
