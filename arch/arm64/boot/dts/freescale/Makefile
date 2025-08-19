@@ -137,7 +137,7 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mp-evk.dtb imx8mp-evk-rm67191.dtb imx8mp-evk-it626
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-msc-sm2s-ep1.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-phyboard-pollux-rdk.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ab2.dtb
-dtb-$(CONFIG_ARCH_MXC) += imx8mp-navq.dtb imx8mp-navq-ov5640-ov5645.dtb imx8mp-navq-ov5647-ov5640.dtb
+# dtb-$(CONFIG_ARCH_MXC) += imx8mp-navq.dtb imx8mp-navq-ov5640-ov5645.dtb imx8mp-navq-ov5647-ov5640.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ddr4-evk.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-evk-ndm.dtb
 
@@ -750,11 +750,17 @@ imx8mp-cartzy-v2-m7-disp-dtbs := imx8mp-cartzy-v2-base-m7.dtb imx8mp-cartzy-rpi-
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v2-disp.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v2-m7-disp.dtb
 
-# Cartzy EzCart
+# Cartzy EzCart v1.0
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v1.dtb
 
 imx8mp-cartzy-v2-disp-dtbs := imx8mp-cartzy-v2-base.dtb imx8mp-cartzy-rpi-disp.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-cartzy-v2-disp.dtb
+
+# Cartzy EzCart v1.1
+imx8mp-ezcart-v11-disp-dtbs := imx8mp-ezcart-v1.1-base.dtb imx8mp-cartzy-rpi-disp.dtbo
+imx8mp-ezcart-v11-m7-disp-dtbs := imx8mp-ezcart-v1.1-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-disp.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-m7-disp.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx93-nitrogen-smarc.dtb \
 			  imx93-nitrogen-smarc-rpmsg.dtb \
