@@ -14,7 +14,7 @@
     	compatible = "powertip,ph800480t013-idf02";
         power-supply = <&attiny>;
         backlight = <&attiny>;
-        rotation = <180>; /* Rotate 180 degrees */
+        // rotation = <180>; /* Rotate 180 degrees */
 
         status = "okay";
 
@@ -51,9 +51,9 @@
 		reset-gpio = <&attiny 1 1>;
 
 		/* The following properties are optional */
-		// touchscreen-inverted-x;
-		// touchscreen-inverted-y;
-		// touchscreen-swapped-x-y;
+		touchscreen-inverted-x;
+		touchscreen-inverted-y;
+		touchscreen-swapped-x-y;
 
 		/* raspberrypi,7inch-touchscreen-panel doesn't have a wakeup line
 		 * so we do not have interrupt-gpios to read the data.
