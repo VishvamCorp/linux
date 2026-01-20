@@ -7,6 +7,7 @@ Kernel tree for Ezurio (ex-Boundary Devices) platforms.
 ## EzCart Linux kernel (Nitrogen based)
 * The 5.15.x kernel is in branch [cartzy-if-5.15.y][cartzy-if-5.15.y]
 * The 6.6.x kernel is in branch [cartzy-if-6.6.y][cartzy-if-6.6.y]
+* The 6.6.52-2.2.1 kernel is in branch [cartzy-if-6.6.52-2.2.1][cartzy-if-6.6.52-2.2.1]
 
 ## Versionning
 Increment number in `localversion` file to match the kernel version before releasing a new kernel.
@@ -57,6 +58,7 @@ This section targets the following platforms:
 [nxp]: https://github.com/nxp-imx/linux-imx "NXP Linux kernel Git repository"
 [cartzy-if-5.15.y]:https://github.com/boundarydevices/linux/tree/cartzy-if-5.15.y "EzCart 5.15.y kernel tree"
 [cartzy-if-6.6.y]:https://github.com/boundarydevices/linux/tree/cartzy-if-6.6.y "EzCart 6.6.y kernel tree"
+[cartzy-if-6.6.52-2.2.1]:https://github.com/boundarydevices/linux/tree/cartzy-if-6.6.52-2.2.1 "EzCart 6.6.52-2.2.1 kernel tree"
 [nitrogen6-som]: https://www.ezurio.com/system-on-module/nxp-imx6 "Nitrogen6 SOM products"
 [nitrogen6-sbc]: https://www.ezurio.com/single-board-computer/nxp-imx6 "Nitrogen6 SBC products"
 [nitrogen8-som]: https://www.ezurio.com/system-on-module/nxp-imx8 "Nitrogen8 SOM products"
