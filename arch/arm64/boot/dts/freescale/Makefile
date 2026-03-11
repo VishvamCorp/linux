@@ -728,7 +728,11 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mm-nitrogen8mm.dtb imx8mm-nitrogen8mm-rpmsg.dtb \
 			  imx8mm-nitrogen8mm_rev2.dtb imx8mm-nitrogen8mm_rev2-rpmsg.dtb \
 			  imx8mm-nitrogen8mm_som.dtb imx8mm-nitrogen8mm_som-rpmsg.dtb \
 			  imx8mm-nitrogen_smarc.dtb imx8mm-nitrogen_smarc-rpmsg.dtb \
-			  imx8mm-nitrogen_smarc-pivariety.dtb imx8mm-nitrogen_smarc-tevs.dtb \
+			  imx8mm-nitrogen_smarc-ov5645.dtb \
+			  imx8mm-nitrogen_smarc-pivariety.dtb \
+			  imx8mm-nitrogen_smarc-r30.dtb imx8mm-nitrogen_smarc-tevs.dtb \
+			  imx8mm-nitrogen_smarc-nx611.dtb imx8mm-nitrogen_smarc-ti351.dtb \
+			  imx8mm-nitrogen_smarc-r30-nx611.dtb \
 
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-nitrogen8mp.dtb imx8mp-nitrogen8mp-rpmsg.dtb \
 			  imx8mp-nitrogen8mp_r20.dtb imx8mp-nitrogen8mp_r20-rpmsg.dtb \
@@ -736,8 +740,13 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mp-nitrogen8mp.dtb imx8mp-nitrogen8mp-rpmsg.dtb \
 			  imx8mp-nitrogen8mp_r20-enc.dtb imx8mp-nitrogen8mp_r20-enc-rpmsg.dtb \
 			  imx8mp-nitrogen8mp_vm.dtb \
 			  imx8mp-nitrogen_smarc.dtb imx8mp-nitrogen_smarc-rpmsg.dtb \
+			  imx8mp-nitrogen_smarc-hmi.dtb \
+			  imx8mp-nitrogen_smarc-nx611.dtb \
+			  imx8mp-nitrogen_smarc-ov5640.dtb \
+			  imx8mp-nitrogen_smarc-ov5645.dtb \
 			  imx8mp-nitrogen_smarc-pivariety.dtb \
 			  imx8mp-nitrogen_smarc-tevs.dtb \
+			  imx8mp-nitrogen_smarc-ti351.dtb \
 			  imx8mp-tag.dtb \
 
 # Cartzy EzCart
@@ -762,17 +771,25 @@ imx8mp-ezcart-v11-m7-disp-dtbs := imx8mp-ezcart-v1.1-base-m7.dtb imx8mp-cartzy-r
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-disp.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-m7-disp.dtb
 
-dtb-$(CONFIG_ARCH_MXC) += imx93-nitrogen-smarc.dtb \
+dtb-$(CONFIG_ARCH_MXC) += imx93-bdx.dtb \
+			  imx93-nitrogen-smarc.dtb \
+			  imx93-nitrogen-smarc-ethosu.dtb \
 			  imx93-nitrogen-smarc-rpmsg.dtb \
 			  imx93-nitrogen-smarc-lvds.dtb \
+			  imx93-nitrogen-smarc-lvds-nx611.dtb \
 			  imx93-nitrogen-smarc-lvds-tevs.dtb \
+			  imx93-nitrogen-smarc-nx611.dtb \
 			  imx93-nitrogen-smarc-ov5640.dtb \
 			  imx93-nitrogen-smarc-spi-slave.dtb \
 			  imx93-nitrogen-smarc-tevs.dtb \
+			  imx93-nitrogen-smarc-ti351.dtb \
 			  imx93-nitrogen-smarc-auo-b080uan01-dsi.dtb \
 			  imx93-nvc.dtb \
+			  imx93-nvc-rpmsg.dtb \
 
 dtb-$(CONFIG_ARCH_MXC) += imx91-nitrogen-smarc.dtb \
+			  imx91-nitrogen-smarc-nx611.dtb \
+			  imx91-nitrogen-smarc-ti351.dtb \
 
 dtb-$(CONFIG_ARCH_MXC) += imx95-nitrogen-smarc.dtb \
 
@@ -796,3 +813,6 @@ dtb-$(CONFIG_ARCH_MXC) += imx95-nitrogen-smarc-lvds0.dtb
 
 imx95-nitrogen-smarc-lvds1-dtbs := imx95-nitrogen-smarc.dtb imx95-nitrogen-smarc-lvds1.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx95-nitrogen-smarc-lvds1.dtb
+
+imx95-nitrogen-smarc-nx611-dtbs := imx95-nitrogen-smarc.dtb imx95-nitrogen-smarc-nx611.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx95-nitrogen-smarc-nx611.dtb
