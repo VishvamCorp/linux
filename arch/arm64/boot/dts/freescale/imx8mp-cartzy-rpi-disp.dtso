@@ -59,6 +59,7 @@
 		 * so we do not have interrupt-gpios to read the data.
 		 * This panel will run in polling mode.
 		 */
+		 poll-rate-hz = <30>;
 	};
 };
 

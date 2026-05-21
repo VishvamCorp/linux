@@ -1,0 +1,1253 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device Tree file for Boundary Devices Nitrogen8MP SOM
+ * installed on Cartzy Control Board V2.0 (EzCart V1.0)
+ *
+ * @author Nikita Bulaev agency@grovety.com
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/interconnect/ti,ds90ub635.h>
+#include <dt-bindings/interconnect/ti,ds90ub638.h>
+
+#include <dt-bindings/phy/phy-imx8-pcie.h>
+#include <dt-bindings/pwm/pwm.h>
+#include <dt-bindings/usb/pd.h>
+#include "imx8mp-nitrogen8mp-som.dtsi"
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_gpio_led: gpioledgrp {
+		fsl,pins = <
+		/* These pins controled by gpio-leds */
+		MX8MP_IOMUXC_SAI1_TXD1__GPIO4_IO13    0x140 /* GREEN CPU LED1 */
+		MX8MP_IOMUXC_SAI1_TXD3__GPIO4_IO15	  0x140 /* RED CPU LED3 */
+
+		/* These pins controled by gpio-keys */
+#define GP_CPU_LED_BLUE	<&gpio4 14 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI1_TXD2__GPIO4_IO14	  0x100 /* Blue CPU LED2 */
+		>;
+	};
+
+	pinctrl_ecspi1: ecspi1grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_ECSPI1_SCLK__ECSPI1_SCLK	0x140
+			MX8MP_IOMUXC_ECSPI1_MOSI__ECSPI1_MOSI	0x140
+			MX8MP_IOMUXC_ECSPI1_MISO__ECSPI1_MISO	0x140
+#define GP_ECSPI1_CS	<&gpio5 9 GPIO_ACTIVE_LOW>
+			MX8MP_IOMUXC_ECSPI1_SS0__GPIO5_IO09	0x143
+		>;
+	};
+
+	pinctrl_ecspi2: ecspi2grp {
+		fsl,pins = <
+			/* J31 */
+			MX8MP_IOMUXC_ECSPI2_SCLK__ECSPI2_SCLK		0x82	/* Pin 20 */
+			MX8MP_IOMUXC_ECSPI2_MOSI__ECSPI2_MOSI		0x82	/* Pin 10 */
+			MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO		0x82	/* Pin 8 */
+#define GP_ECSPI2_CS	<&gpio5 13 GPIO_ACTIVE_LOW>
+			MX8MP_IOMUXC_ECSPI2_SS0__GPIO5_IO13		0x143	/* Pin 6 */
+#define GP_LSM6DSV_INT1	<&gpio4 7 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI1_RXD5__GPIO4_IO07		0x80	/* LSM6DSV INT1 */
+#define GP_LSM6DSV_INT2	<&gpio4 8 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI1_RXD6__GPIO4_IO08		0x80	/* LSM6DSV INT2 */
+		>;
+	};
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_HDMI_DDC_SCL__HDMIMIX_HDMI_SCL	0x400001c3
+			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_HDMI_SDA	0x400001c3
+			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_HDMI_HPD		0x40000019
+			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_HDMI_CEC		0x40000019
+			MX8MP_IOMUXC_NAND_DATA01__GPIO3_IO07		0x119
+			/* J31 */
+			MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05	0x41	/* Pin 19 */
+			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20		0x16	/* Pin 2 */
+			/*MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19		0x1c4*/	/* Pin 4 */
+
+#define WM_RESET_CTRL	<&gpio4 16 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI1_TXD4__GPIO4_IO16	0x100
+
+#define CAM1_POWER_ON	<&gpio4 18 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI1_TXD6__GPIO4_IO18	0x106
+
+#define CAM2_POWER_ON	<&gpio4 10 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI1_TXFS__GPIO4_IO10	0x106
+		>;
+	};
+
+	pinctrl_pwm3: pwm3grp {
+		fsl,pins = <
+			/* J5_55, Fan PWM speed control */
+			MX8MP_IOMUXC_SPDIF_TX__PWM3_OUT	0x116
+		>;
+	};
+
+	pinctrl_fan_tach: fantachgrp {
+		fsl,pins = <
+			/* J5_57, Fan tachometer input, pull-up, IRQ */
+			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04	0x80
+		>;
+	};
+
+	pinctrl_i2c6: i2c6grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI5_RXFS__I2C6_SCL  0x400001c3
+			MX8MP_IOMUXC_SAI5_RXC__I2C6_SDA	  0x400001c3
+		>;
+	};
+
+	pinctrl_pwm4: pwm4grp {
+		fsl,pins = <
+			/* J31, pin 36 - SAI5_RXFS reassigned to I2C6 */
+		>;
+	};
+
+	pinctrl_usb3_1: usb3-1-pins {
+		fsl,pins = <
+		/* USB3_1_PWR_EN: output, pull-up (drives U10 EN on the carrier) */
+#define USB3_1_PWR_EN	<&gpio4 30 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI3_RXD__GPIO4_IO30	0x106
+
+		/* USB3_1_FAULT: input, pulled up by external resistor, falling-edge */
+#define USB3_1_FAULT	<&gpio4 29 IRQ_TYPE_LEVEL_LOW>
+		MX8MP_IOMUXC_SAI3_RXC__GPIO4_IO29	0x006
+
+		/* USB2.0 MUX select (TS3USB221A): LOW = host path to J15.1
+		 * (D <-> 1D), HIGH = USB-boot path to J3 (D <-> 2D). Held LOW
+		 * by a gpio-hog under &gpio4.
+		 */
+#define USB_MUX_SEL	<&gpio4 31 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI3_TXFS__GPIO4_IO31	0x106
+
+		/* Force pad into GPIO mode (ALT0). On this board the same pad
+		 * is wired to the camera deserializer (CAM1_GPIO2). If left in
+		 * the ALT1=USB1_OC routing inherited from boot defaults, the
+		 * controller latches a spurious over-current condition shortly
+		 * after probe and locks both root-hub ports of usb_dwc3_0.
+		 * The TOF pinctrl group sets the same alt but is applied too
+		 * late (after xHCI init); applying it here forces it early.
+		 */
+		MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13	0x106
+		>;
+	};
+
+	pinctrl_usb3_2: usb3-2-pins {
+		fsl,pins = <
+		/* USB3_2_PWR_EN: output, pull-up (drives U12 EN on the carrier) */
+#define USB3_2_PWR_EN	<&gpio1 9 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09	0x106
+
+		/* USB3_2_FAULT: input, pulled up by external resistor, falling-edge */
+#define USB3_2_FAULT	<&gpio4 19 IRQ_TYPE_LEVEL_LOW>
+		MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19	0x006
+
+		/* Force pad into GPIO mode (ALT0). Same pad is wired to the
+		 * camera deserializer LOCK signal (CAM1_LOCK); leaving it in
+		 * the ALT1=USB2_OC routing would feed deserializer transitions
+		 * into the USB OC input and trip the controller.
+		 */
+		MX8MP_IOMUXC_GPIO1_IO15__GPIO1_IO15	0x106
+		>;
+	};
+
+	pinctrl_uart2: uart2grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART2_RXD__UART2_DCE_RX	0x140
+			MX8MP_IOMUXC_UART2_TXD__UART2_DCE_TX	0x140
+		>;
+	};
+
+	pinctrl_uart4: uart4grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART4_RXD__UART4_DCE_RX	0x140
+			MX8MP_IOMUXC_UART4_TXD__UART4_DCE_TX	0x140
+		>;
+	};
+
+	pinctrl_usdhc1: usdhc1grp {
+		fsl,pins = <
+		MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK    0x190
+		MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD    0x1d0
+		MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0    0x1d0
+		MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1    0x1d0
+		MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2    0x1d0
+		MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3    0x1d0
+		MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4    0x1d0
+		MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5    0x1d0
+		MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6    0x1d0
+		MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7    0x1d0
+		/*MX8MP_IOMUXC_GPIO1_IO03__USDHC1_VSELECT    0x116*/
+		MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE    0x10
+		MX8MP_IOMUXC_SD1_RESET_B__USDHC1_RESET_B 0x140
+		>;
+	};
+
+	pinctrl_usdhc1_100mhz: usdhc1grp-100mhz {
+		fsl,pins = <
+		MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK    0x194
+		MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD    0x1d4
+		MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0    0x1d4
+		MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1    0x1d4
+		MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2    0x1d4
+		MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3    0x1d4
+		MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4    0x1d4
+		MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5    0x1d4
+		MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6    0x1d4
+		MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7    0x1d4
+		MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE  0x14
+		>;
+	};
+
+	pinctrl_usdhc1_200mhz: usdhc1grp-200mhz {
+		fsl,pins = <
+		MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK    0x196
+		MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD    0x1d6
+		MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0    0x1d6
+		MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1    0x1d6
+		MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2    0x1d6
+		MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3    0x1d6
+		MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4    0x1d6
+		MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5    0x1d6
+		MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6    0x1d6
+		MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7    0x1d6
+		MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE  0x12
+		>;
+	};
+
+	/* GPIO pins for camera #1 */
+	pinctrl_i2c3_ov5695_mipi: i2c3-ov5695-mipigrp {
+		/* Camera 1 RESET GPIO3 */
+		cam1_reset_open_drain: cam1_reset_open_drain {
+			fsl,pins = <
+#define GP_CAMERA1_RESET    <&gpio1 7 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
+			MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07    0x030 /* OpenDrain output */
+			>;
+        	drive-open-source; /* Also force open source */
+    	};
+	};
+
+	/* GPIO pins for camera #2 */
+	pinctrl_i2c4_ov5695_mipi: i2c4-ov5695-mipigrp {
+	/* Camera 2 RESET GPIO3 */
+		cam2_reset_open_drain: cam2_reset_open_drain {
+			fsl,pins = <
+#define GP_CAMERA2_RESET    <&gpio1 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
+			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14    0x030 /* OpenDrain output */
+			>;
+			drive-open-source; /* Also force open source */
+		};
+	};
+
+	pinctrl_ds90ub638_1: ds90ub638_grp_1 {
+		fsl,pins = <
+#define DS90UB638_1_LOCK    <&gpio1 15 IRQ_TYPE_LEVEL_HIGH>
+		MX8MP_IOMUXC_GPIO1_IO15__GPIO1_IO15    0x106
+
+#define DS90UB638_1_PASS    <&gpio1 11 IRQ_TYPE_LEVEL_HIGH>
+		MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11    0x106
+		>;
+	};
+
+	pinctrl_ds90ub638_2: ds90ub638_grp_2 {
+		fsl,pins = <
+#define DS90UB638_2_LOCK    <&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
+		MX8MP_IOMUXC_GPIO1_IO01__GPIO1_IO01    0x106
+
+#define DS90UB638_2_PASS    <&gpio1 12 IRQ_TYPE_LEVEL_HIGH>
+		MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12    0x106
+		>;
+	};
+
+	pinctrl_i2c3_tof: i2c3_tofgrp {
+		fsl,pins = <
+		/* TOF 1/2 INT - Input, trigger on falling GPIO0 */
+#define GP_TOF_DATA_RDY_1_2	<&gpio1 4 IRQ_TYPE_LEVEL_LOW>
+		MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04	0x166
+
+		/* TOF 1/2 MD INT - Input, trigger on falling GPIO1 */
+#define GP_TOF_MD1	<&gpio1 10 IRQ_TYPE_LEVEL_LOW>
+		MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10	0x166
+
+		/* TOF 1/2 SYNC GPIO2 */
+#define GP_TOF_SYNC1  <&gpio1 13 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13	0x106
+		>;
+	};
+
+	pinctrl_i2c4_tof: i2c4_tofgrp {
+		fsl,pins = <
+		/* TOF 3/4 INT - Input, trigger on falling GPIO0 */
+#define GP_TOF_DATA_RDY_3_4	<&gpio1 5 IRQ_TYPE_LEVEL_LOW>
+		MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05	0x166
+
+		/* TOF 3/4 MD GPIO1 */
+#define GP_TOF_MD2	<&gpio1 6 IRQ_TYPE_LEVEL_LOW>
+		MX8MP_IOMUXC_GPIO1_IO06__GPIO1_IO06	0x166
+
+		/* TOF 3 SYNC GPIO2 */
+#define GP_TOF_SYNC2	<&gpio1 8 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08	0x106
+		>;
+	};
+
+	/* GPIOS P2 header */
+	pinctrl_gpios_p2: gpios_p2grp {
+		/* All pins are set to OUTPUT Pull-Down */
+		fsl,pins = <
+#define GPIOS_P2_PIN1 <&gpio4 27 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_MCLK__GPIO4_IO27 0x106
+
+#define GPIOS_P2_PIN2 <&gpio4 22 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22 0x106
+
+#define GPIOS_P2_PIN3 <&gpio4 23 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_RXD0__GPIO4_IO23 0x106
+
+#define GPIOS_P2_PIN4 <&gpio4 26 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_TXD0__GPIO4_IO26 0x106
+
+#define GPIOS_P2_PIN5 <&gpio4 25 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_TXC__GPIO4_IO25 0x106
+
+#define GPIOS_P2_PIN6 <&gpio4 21 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_RXFS__GPIO4_IO21 0x106
+
+#define GPIOS_P2_PIN7 <&gpio4 28 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI3_RXFS__GPIO4_IO28 0x106
+
+#define GPIOS_P2_PIN8 <&gpio4 24 GPIO_ACTIVE_HIGH>
+		MX8MP_IOMUXC_SAI2_TXFS__GPIO4_IO24 0x106
+		>;
+	};
+};
+
+/ {
+	model = "Ezurio i.MX8MPlus SOM + EzCart control board V1.2";
+	compatible = "fsl,imx8mp-custom-board", "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_led>;
+
+		status {
+			label = "green: status";
+			gpios = <&gpio4 13 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+			linux,default-trigger = "heartbeat";
+		};
+
+		activity_led {
+			label = "mmc-activity";
+			gpios = <&gpio4 15 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "mmc2";
+		};
+	};
+
+	gpio_keys: gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+	};
+
+	sound_hdmi: sound-hdmi {
+		compatible = "fsl,imx-audio-hdmi";
+		model = "audio-hdmi";
+		audio-cpu = <&aud2htx>;
+		hdmi-out;
+		constraint-rate = <44100>,
+				<88200>,
+				<176400>,
+				<32000>,
+				<48000>,
+				<96000>,
+				<192000>;
+		status = "disabled";
+	};
+
+	sound-wm8960 {
+		status = "disabled";
+	};
+
+	csi_mclk: csi-mclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+		clock-output-names = "csi_mclk";
+		status = "okay";
+	};
+
+	reg_vref_1v2: regulator-vref-1v2 {
+		compatible = "regulator-fixed";
+		regulator-name = "vref-1v2";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+	};
+
+	reg_vref_2v8: regulator-vref-2v8 {
+		compatible = "regulator-fixed";
+		regulator-name = "vref-2v8";
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <2800000>;
+	};
+
+	reg_vref_5v0: regulator-vref-5v0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vref-5v0";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	reg_usb3_1_vbus: regulator-usb3_1-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb3_1_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = USB3_1_PWR_EN;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	reg_usb3_2_vbus: regulator-usb3_2-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb3_2_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = USB3_2_PWR_EN;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	fan0: pwm-fan {
+		compatible = "pwm-fan";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_fan_tach>;
+		#cooling-cells = <2>;
+		/* 25 kHz PWM for 4-pin CPU fan */
+		pwms = <&pwm3 0 40000 PWM_POLARITY_INVERTED>;
+		cooling-levels = <0 64 128 192 255>;
+		pulses-per-revolution = <2>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <4 IRQ_TYPE_EDGE_FALLING>;
+		status = "okay";
+	};
+};
+
+&aud2htx {
+	status = "disabled";
+};
+
+&cameradev {
+	status = "okay";
+};
+
+&isi_0 {
+	status = "disabled";
+
+	m2m_device {
+		status = "disabled";
+	};
+};
+
+&isi_1 {
+	status = "disabled";
+};
+
+&dewarp {
+	status = "okay";
+};
+
+&dsp {
+	status = "okay";
+};
+
+&easrc {
+	status = "disabled";
+};
+
+&ecspi1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	fsl,spi-num-chipselects = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi1>;
+	cs-gpios = GP_ECSPI1_CS;
+	status = "okay";
+
+	spidev1: spi@0 {
+		compatible = "spidev";
+		reg = <0>;
+		spi-max-frequency = <500000>;
+	};
+};
+
+&ecspi2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	fsl,spi-num-chipselects = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi2>;
+	cs-gpios = GP_ECSPI2_CS;
+	status = "okay";
+
+	accel_gyro@0 {
+		compatible = "st,lsm6dsv16x", "st,lsm6dsv";
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <7 IRQ_TYPE_LEVEL_HIGH>, <8 IRQ_TYPE_LEVEL_HIGH>;
+		st,drdy-int-pin = <1>;
+	};
+};
+
+&fec {
+	status = "disabled";
+};
+
+&eqos {
+	status = "disabled";
+};
+
+&flexcan1 {
+	status = "disabled";
+};
+
+&flexcan2 {
+	status = "disabled";
+};
+
+&hdmi {
+	status = "okay";
+};
+
+&hdmiphy {
+	status = "okay";
+};
+
+&hdmi_blk_ctrl {
+	status = "okay";
+};
+
+&hdmi_pavi {
+	status = "okay";
+};
+
+&gpio1 {
+	gpio-line-names = "",            "CAM2.LOCK",    "WDOG",         "",           /* 0-3 */
+					  "TOF.1-2.RDY", "TOF.3-4.RDY",  "TOF.3-4.MD",  "CAM1.RST",    /* 4-7 */
+					  "TOF.3-4.SYNC","USB2.PWR.EN",  "TOF.1-2.MD",  "CAM1.PASS",   /* 8-11 */
+					  "CAM2.PASS",   "TOF.1-2.SYNC", "CAM2.RST",    "CAM1.LOCK",   /* 12-15 */
+					  "",            "",             "",             "",           /* 16-19 */
+					  "",            "",             "",             "",           /* 20-23 */
+					  "",            "",             "",             "",           /* 24-27 */
+					  "",            "",             "",             "",           /* 28-31 */
+					  "",            "",             "",             "";           /* 32-35 */
+};
+
+&gpio3 {
+	gpio-line-names = "",         "",         "",             "",             /* 0-3 */
+					  "",         "",         "",             "",             /* 4-7 */
+					  "",         "",         "",             "",             /* 8-11 */
+					  "",         "",         "",             "",             /* 12-15 */
+					  "",         "",         "",             "I2C6.SCL",     /* 16-19 */
+					  "I2C6.SDA", "",         "",             "",             /* 20-23 */
+					  "",         "",         "HDMI.DDC.SCL", "HDMI.DDC.SDA", /* 24-27 */
+					  "HDMI.CEC", "HDMI.HPD", "",             "",             /* 28-31 */
+					  "",         "",         "",             "";             /* 32-35 */
+};
+
+&gpio4 {
+	gpio-line-names = "",          "",              "",             "",            /* 0-3 */
+					  "",          "",              "",             "ACC.INT1",    /* 4-7 */
+					  "ACC.INT2",  "",              "CAM2.PWR.ON",  "",            /* 8-11 */
+					  "BAT.RESET", "CPU.LED.GREEN", "CPU.LED.BLUE", "CPU.LED.RED", /* 12-15 */
+					  "WM.RESET",  "WM.INT",        "CAM1.PWR.ON",  "USB2.FAULT",  /* 16-19 */
+					  "",          "P2.PIN6",       "P2.PIN2",      "P2.PIN3",     /* 20-23 */
+					  "P2.PIN8",   "P2.PIN5",       "P2.PIN4",      "P2.PIN1",     /* 24-27 */
+					  "P2.PIN7",   "USB1.FAULT",    "USB1.PWR_EN",  "USB.MUX.SEL", /* 28-31 */
+					  "",          "",              "",             "";            /* 32-35 */
+
+	usb_mux_sel {
+		gpio-hog;
+		gpios = <31 GPIO_ACTIVE_HIGH>;
+		output-low;
+		line-name = "usb_mux_sel";
+	};
+
+	cam1_power_on {
+		gpio-hog;
+		gpios = <18 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "cam1_power_on";
+	};
+
+	cam2_power_on {
+		gpio-hog;
+		gpios = <10 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "cam2_power_on";
+	};
+};
+
+&gpio5 {
+	gpio-line-names = "",          "",         "",          "",          /* 0-3 */
+					  "FAN_TACH",  "",         "SPI1.SCLK", "SPI1.MOSI", /* 4-7 */
+					  "SPI1.MISO", "SPI1.CS0", "SPI2.SCLK", "SPI2.MOSI", /* 8-11 */
+					  "SPI2.MISO", "SPI2.CS0", "I2C1.SCL",  "I2C1.SDA",  /* 12-15 */
+					  "I2C2.SCL",  "I2C2.SDA", "I2C3.SCL",  "I2C3.SDA",  /* 16-19 */
+					  "I2C4.SCL",  "I2C4.SDA", "",          "",          /* 20-23 */
+					  "UART2.RX",  "UART2.TX", "",          "",          /* 24-27 */
+					  "UART4.RX",  "UART4.TX", "",          "",          /* 28-31 */
+					  "",          "",         "",          "";          /* 32-35 */
+};
+
+&i2c2 {
+	pca9546: i2cmux9546@70 {
+		// pinctrl-names = "default";
+		// pinctrl-0 = <&pinctrl_i2c2_pca9546>;
+		compatible = "nxp,pca9546";
+		reg = <0x70>;
+		// reset-gpios = GP_PCA9546_RESET;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c2a: i2c2@0 {
+			clock-frequency = <100000>;
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Battery module I2C */
+		};
+
+		i2c2b: i2c2@1 {
+			clock-frequency = <100000>;
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Weight module #1 I2C  */
+			wm1@60 {
+				compatible = "generic-i2c-device";
+				reg = <0x60>;
+			};
+		};
+
+		i2c2c: i2c2@2 {
+			clock-frequency = <100000>;
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Nothing connected in v1.2 */
+		};
+
+		i2c2d: i2c2@3 {
+			clock-frequency = <100000>;
+			reg = <3>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Display I2C channel */
+		};
+	};
+};
+
+&i2c2a {
+	status = "disabled";
+};
+
+&i2c2b {
+	status = "okay";
+};
+
+&i2c2c {
+	status = "disabled";
+};
+
+&i2c2d {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+
+	/* DS90UB638 deserializer */
+	ds90ub638_0@30 {
+		compatible = "custom,i2c-device";
+		reg = <0x30>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pinctrl-0 = <&pinctrl_ds90ub638_1>;
+
+		init-regs {
+			reg@0 {
+				address = <TI_DS90UB638_RX_PORT_CTL_REG>;
+				mask = <TI_DS90UB638_RX_PORT_CTL_STARTUP_BIT_MASK>;
+				value = <TI_DS90UB638_RX_PORT_CTL_STARTUP_BIT_SET>;
+				operation = "setbits";
+			};
+			reg@1 {
+				address = <TI_DS90UB638_FWD_CTL2_REG>;
+				mask = <TI_DS90UB638_FWD_CTL2_FWD_SYNC_AS_AVAIL_MASK>;
+				value = <TI_DS90UB638_FWD_CTL2_FWD_SYNC_AS_AVAIL>;
+				operation = "setbits";
+			};
+			reg@2 {
+				address = <TI_DS90UB638_GENERAL_CFG_REG>;
+				value = <(TI_DS90UB638_GENERAL_CFG_I2C_CONTROLLER_ENABLE |
+				TI_DS90UB638_GENERAL_CFG_OUTPUT_EN_MODE |
+				TI_DS90UB638_GENERAL_CFG_OUTPUT_ENABLE |
+				TI_DS90UB638_GENERAL_CFG_OUTPUT_SLEEP_STATE_SELECT |
+				TI_DS90UB638_GENERAL_CFG_RX_PARITY_CHECKER_ENABLE)>;
+				operation = "overwrite";
+			};
+			reg@3 {
+				address = <TI_DS90UB638_FPD3_PORT_SEL_REG>;
+				value = <TI_DS90UB638_FPD3_PORT_SEL_RX_WRITE_PORT_0_EN>;
+				operation = "overwrite";
+			};
+			reg@4 {
+				address = <TI_DS90UB638_BCC_CONFIG_REG>;
+				value = <(TI_DS90UB638_BCC_CONFIG_I2C_PASS_THROUGH_ALL_EN |
+				TI_DS90UB638_BCC_CONFIG_BC_ALWAYS_ON_EN |
+				TI_DS90UB638_BCC_CONFIG_BC_CRC_GENERATOR_ENABLE_EN|
+				TI_DS90UB638_BCC_CONFIG_BC_FREQ_SELECT_50MBPS)>;
+				operation = "overwrite";
+			};
+			reg@5 {
+				address = <TI_DS90UB638_FWD_CTL1_REG>;
+				mask = <TI_DS90UB638_FWD_CTL1_FWD_PORT0_MASK>;
+				value = <TI_DS90UB638_FWD_CTL1_FWD_PORT0_EN>;
+				operation = "setbits";
+			};
+			reg@6 {
+				// Turn on GPIOs transfer
+				address = <TI_DS90UB638_DATAPATH_CTL1_REG>;
+				value = <TI_DS90UB638_DATAPATH_CTL1_FC_GPIO_EN_TWO>;
+				operation = "overwrite";
+			};
+			reg@7 {
+				// GPIO1/3 - Inputs, this reg must me set first
+				address = <TI_DS90UB638_GPIO_INPUT_CTL_REG>;
+				value = <(TI_DS90UB638_GPIO_INPUT_CTL_GPIO1_EN |
+				TI_DS90UB638_GPIO_INPUT_CTL_GPIO3_EN)>;
+				operation = "overwrite";
+			};
+			reg@8 {
+				// Turn off PullDown on Opendrain gpio1 7
+				address = <TI_DS90UB638_GPIO_PD_CTL_REG>;
+				value = <TI_DS90UB638_GPIO_PD_CTL_GPIO3_PD_DISABLE>;
+				operation = "overwrite";
+			};
+			reg@9 {
+				// GPIO0 - Output (ToFs 1/2 DATA_RDY)
+				address = <TI_DS90UB638_GPIO0_PIN_CTL_REG>;
+				value = <(TI_DS90UB638_GPIOx_PIN_CTL_OUT_EN | TI_DS90UB638_GPIOx_PIN_CTL_OUT_SEL_RX_GPIO0)>;
+				operation = "overwrite";
+			};
+			reg@10 {
+				// GPIO1 - Output (ToFs 1/2 MD)
+				address = <TI_DS90UB638_GPIO1_PIN_CTL_REG>;
+				value = <(TI_DS90UB638_GPIOx_PIN_CTL_OUT_EN | TI_DS90UB638_GPIOx_PIN_CTL_OUT_SEL_RX_GPIO1)>;
+				operation = "overwrite";
+			};
+			reg@11 {
+				// GPIO2 - Output (ToFs 1/2 SYNC)
+				address = <TI_DS90UB638_GPIO2_PIN_CTL_REG>;
+				value = <TI_DS90UB638_GPIOx_PIN_CTL_OUT_DISABLE>;
+				operation = "overwrite";
+			};
+			reg@12 {
+				// GPIO3 - Input (Camera Reset)
+				address = <TI_DS90UB638_GPIO3_PIN_CTL_REG>;
+				value = <TI_DS90UB638_GPIOx_PIN_CTL_OUT_DISABLE>;
+				operation = "overwrite";
+			};
+			reg@13 {
+				// GPIO1 - DOWN. GPIO0 - DOWN
+				address = <TI_DS90UB638_BC_GPIO_CTL0_REG>;
+				value = <(TI_DS90UB638_BC_GPIO_GPIO1_SEL_VAL0 | TI_DS90UB638_BC_GPIO_GPIO0_SEL_VAL0)>;
+				operation = "overwrite";
+			};
+			reg@14 {
+				// GPIO2/GPIO3 - data sent on the port back channel
+				// WARNING: GPIO3 has bug on current board, so set Camera reset to HIGH always.
+				// FIX: Fix this in next hardware revision.
+				address = <TI_DS90UB638_BC_GPIO_CTL1_REG>;
+				value = <(TI_DS90UB638_BC_GPIO_GPIO3_SEL_VAL1 | TI_DS90UB638_BC_GPIO_GPIO2_SEL_GPIO2)>;
+				operation = "overwrite";
+			};
+			reg@15 {
+				// Turn on CSI and setup 2-lanes
+				address = <TI_DS90UB638_CSI_CTL_REG>;
+				value = <(TI_DS90UB638_CSI_CTL_CSI_LANE_COUNT_2 | TI_DS90UB638_CSI_CTL_CSI_EN)>;
+				operation = "overwrite";
+			};
+		};
+	};
+
+	/* DS90UB635 serializer */
+	ds90ub635_0@18 {
+		compatible = "custom,i2c-device";
+		reg = <0x18>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		// Wait for ready flag from deserializer
+		ready-flag-wait = "/sys/bus/i2c/devices/2-0030/ready_flag";
+
+		init-regs {
+			reg@0 {
+				address = <TI_DS90UB635_GENERAL_CFG_REG>;
+				value = <(TI_DS90UB635_GENERAL_CFG_CSI_SEL_2_LANE |
+				TI_DS90UB635_GENERAL_CFG_CRC_TX_GEN_ENABLE |
+				TI_DS90UB635_GENERAL_CFG_I2C_STRAP_MODE_1V8)>;
+				operation = "overwrite";
+			};
+			reg@1 {
+				// GPIO0 - Input (ToFs DATA_RDY), GPIO1 - Output (ToFs SYNC), GPIO2 - Input (ToFs MD), GPIO3 - Output (Camera Reset)
+				address = <TI_DS90UB635_GPIO_INPUT_CTRL_REG>;
+				value = <(TI_DS90UB635_GPIO_INPUT_CTRL_GPIO0_IN_EN |
+				TI_DS90UB635_GPIO_INPUT_CTRL_GPIO1_IN_EN |
+				TI_DS90UB635_GPIO_INPUT_CTRL_GPIO2_OUT_EN |
+				TI_DS90UB635_GPIO_INPUT_CTRL_GPIO3_OUT_EN)>;
+				operation = "overwrite";
+			};
+			reg@2 {
+				address = <TI_DS90UB635_LOCAL_GPIO_DATA_REG>;
+				value = <(TI_DS90UB635_LOCAL_GPIO_DATA_RMTEN_GPIO3 | TI_DS90UB635_LOCAL_GPIO_DATA_RMTEN_GPIO2)>;
+				operation = "overwrite";
+			};
+			reg@3 {
+				// Turn on GPIOs transfer
+				address = <TI_DS90UB635_DATAPATH_CTL1_REG>;
+				value = <(TI_DS90UB635_DATAPATH_CTL1_DCA_CRC_EN | TI_DS90UB635_DATAPATH_CTL1_FC_GPIO_EN_TWO)>;
+				operation = "overwrite";
+			};
+		};
+	};
+
+	/* Camera module control */
+	cam_ctrl_0@1a {
+		compatible = "generic-i2c-device";
+		reg = <0x1a>;
+	};
+
+	ov5695: ov5695_mipi0@36 {
+		avdd-supply = <&reg_vref_2v8>;
+		dovdd-supply = <&reg_vref_1v8>;
+		dvdd-supply = <&reg_vref_1v2>;
+		clocks = <&csi_mclk>;
+		clock-names = "xvclk";
+		compatible = "ovti,ov5695", "ov5695";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c3_ov5695_mipi>;
+		reg = <0x36>;
+		csi_id = <0>;
+		reset-gpios = GP_CAMERA1_RESET;
+		status = "okay";
+
+		port {
+			ov5695_mipi0_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
+				remote-endpoint = <&mipi0_ov5695_ep>;
+				link-frequencies = /bits/ 64 <800000000>;
+
+				max-lane-frequency = /bits/ 64 <800000000>;
+				max-pixel-frequency = /bits/ 64 <266000000>;
+			};
+		};
+	};
+};
+
+&i2c4 {
+	status = "okay";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+
+	/* DS90UB638 deserializer */
+	ds90ub638_0@30 {
+		compatible = "custom,i2c-device";
+		reg = <0x30>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pinctrl-0 = <&pinctrl_ds90ub638_2>;
+
+		init-regs {
+			reg@0 {
+				address = <TI_DS90UB638_RX_PORT_CTL_REG>;
+				mask = <TI_DS90UB638_RX_PORT_CTL_STARTUP_BIT_MASK>;
+				value = <TI_DS90UB638_RX_PORT_CTL_STARTUP_BIT_SET>;
+				operation = "setbits";
+			};
+			reg@1 {
+				address = <TI_DS90UB638_FWD_CTL2_REG>;
+				mask = <TI_DS90UB638_FWD_CTL2_FWD_SYNC_AS_AVAIL_MASK>;
+				value = <TI_DS90UB638_FWD_CTL2_FWD_SYNC_AS_AVAIL>;
+				operation = "setbits";
+			};
+			reg@2 {
+				address = <TI_DS90UB638_GENERAL_CFG_REG>;
+				value = <(TI_DS90UB638_GENERAL_CFG_I2C_CONTROLLER_ENABLE |
+				TI_DS90UB638_GENERAL_CFG_OUTPUT_EN_MODE |
+				TI_DS90UB638_GENERAL_CFG_OUTPUT_ENABLE |
+				TI_DS90UB638_GENERAL_CFG_OUTPUT_SLEEP_STATE_SELECT |
+				TI_DS90UB638_GENERAL_CFG_RX_PARITY_CHECKER_ENABLE)>;
+				operation = "overwrite";
+			};
+			reg@3 {
+				address = <TI_DS90UB638_FPD3_PORT_SEL_REG>;
+				value = <TI_DS90UB638_FPD3_PORT_SEL_RX_WRITE_PORT_0_EN>;
+				operation = "overwrite";
+			};
+			reg@4 {
+				address = <TI_DS90UB638_BCC_CONFIG_REG>;
+				value = <(TI_DS90UB638_BCC_CONFIG_I2C_PASS_THROUGH_ALL_EN |
+				TI_DS90UB638_BCC_CONFIG_BC_ALWAYS_ON_EN |
+				TI_DS90UB638_BCC_CONFIG_BC_CRC_GENERATOR_ENABLE_EN|
+				TI_DS90UB638_BCC_CONFIG_BC_FREQ_SELECT_50MBPS)>;
+				operation = "overwrite";
+			};
+			reg@5 {
+				address = <TI_DS90UB638_FWD_CTL1_REG>;
+				mask = <TI_DS90UB638_FWD_CTL1_FWD_PORT0_MASK>;
+				value = <TI_DS90UB638_FWD_CTL1_FWD_PORT0_EN>;
+				operation = "setbits";
+			};
+			reg@6 {
+				// Turn on GPIOs transfer
+				address = <TI_DS90UB638_DATAPATH_CTL1_REG>;
+				value = <TI_DS90UB638_DATAPATH_CTL1_FC_GPIO_EN_TWO>;
+				operation = "overwrite";
+			};
+			reg@7 {
+				// GPIO2/3 - Inputs, this reg must me set first
+				address = <TI_DS90UB638_GPIO_INPUT_CTL_REG>;
+				value = <(TI_DS90UB638_GPIO_INPUT_CTL_GPIO2_EN |
+				TI_DS90UB638_GPIO_INPUT_CTL_GPIO3_EN)>;
+				operation = "overwrite";
+			};
+			reg@8 {
+				// Turn off PullDown on Opendrain gpio1 14
+				address = <TI_DS90UB638_GPIO_PD_CTL_REG>;
+				value = <TI_DS90UB638_GPIO_PD_CTL_GPIO3_PD_DISABLE>;
+				operation = "overwrite";
+			};
+			reg@9 {
+				// GPIO0 - Output (ToF 3/4 DATA_RDY)
+				address = <TI_DS90UB638_GPIO0_PIN_CTL_REG>;
+				value = <(TI_DS90UB638_GPIOx_PIN_CTL_OUT_EN | TI_DS90UB638_GPIOx_PIN_CTL_OUT_SEL_RX_GPIO0)>;
+				operation = "overwrite";
+			};
+			reg@10 {
+				// GPIO1 - Output (ToF 3/4 MD)
+				address = <TI_DS90UB638_GPIO1_PIN_CTL_REG>;
+				value = <(TI_DS90UB638_GPIOx_PIN_CTL_OUT_EN | TI_DS90UB638_GPIOx_PIN_CTL_OUT_SEL_RX_GPIO1)>;
+				operation = "overwrite";
+			};
+			reg@11 {
+				// GPIO2 -  Input (ToF 3/4 SYNC)
+				address = <TI_DS90UB638_GPIO2_PIN_CTL_REG>;
+				value = <TI_DS90UB638_GPIOx_PIN_CTL_OUT_DISABLE>;
+				operation = "overwrite";
+			};
+			reg@12 {
+				// GPIO3 - Input (Camera Reset)
+				address = <TI_DS90UB638_GPIO3_PIN_CTL_REG>;
+				value = <TI_DS90UB638_GPIOx_PIN_CTL_OUT_DISABLE>;
+				operation = "overwrite";
+			};
+			reg@13 {
+				// GPIO1 - DOWN. GPIO0 - DOWN
+				address = <TI_DS90UB638_BC_GPIO_CTL0_REG>;
+				value = <(TI_DS90UB638_BC_GPIO_GPIO1_SEL_VAL0 | TI_DS90UB638_BC_GPIO_GPIO0_SEL_VAL0)>;
+				operation = "overwrite";
+			};
+			reg@14 {
+				// GPIO2/GPIO3 - data sent on the port back channel
+				// WARNING: GPIO3 has bug on current board, so set Camera reset to HIGH always.
+				// FIX: Fix this in next hardware revision.
+				address = <TI_DS90UB638_BC_GPIO_CTL1_REG>;
+				value = <(TI_DS90UB638_BC_GPIO_GPIO3_SEL_VAL1 | TI_DS90UB638_BC_GPIO_GPIO2_SEL_GPIO2)>;
+				operation = "overwrite";
+			};
+			reg@15 {
+				// Turn on CSI and setup 2-lanes
+				address = <TI_DS90UB638_CSI_CTL_REG>;
+				value = <(TI_DS90UB638_CSI_CTL_CSI_LANE_COUNT_2 | TI_DS90UB638_CSI_CTL_CSI_EN)>;
+				operation = "overwrite";
+			};
+		};
+	};
+
+	/* DS90UB635 serializer */
+	ds90ub635_0@18 {
+		compatible = "custom,i2c-device";
+		reg = <0x18>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		// Wait for ready flag from deserializer
+		ready-flag-wait = "/sys/bus/i2c/devices/3-0030/ready_flag";
+
+		init-regs {
+			reg@0 {
+				address = <TI_DS90UB635_GENERAL_CFG_REG>;
+				value = <(TI_DS90UB635_GENERAL_CFG_CSI_SEL_2_LANE |
+				TI_DS90UB635_GENERAL_CFG_CRC_TX_GEN_ENABLE |
+				TI_DS90UB635_GENERAL_CFG_I2C_STRAP_MODE_1V8)>;
+				operation = "overwrite";
+			};
+			reg@1 {
+				// GPIO0 - Input (ToFs DATA_RDY), GPIO1 - Input (ToFs MD), GPIO2 - Output (ToFs SYNC), GPIO3 - Output (Camera Reset)
+				address = <TI_DS90UB635_GPIO_INPUT_CTRL_REG>;
+				value = <(TI_DS90UB635_GPIO_INPUT_CTRL_GPIO0_IN_EN |
+				TI_DS90UB635_GPIO_INPUT_CTRL_GPIO1_IN_EN |
+				TI_DS90UB635_GPIO_INPUT_CTRL_GPIO2_OUT_EN |
+				TI_DS90UB635_GPIO_INPUT_CTRL_GPIO3_OUT_EN)>;
+				operation = "overwrite";
+			};
+			reg@2 {
+				address = <TI_DS90UB635_LOCAL_GPIO_DATA_REG>;
+				value = <(TI_DS90UB635_LOCAL_GPIO_DATA_RMTEN_GPIO3 | TI_DS90UB635_LOCAL_GPIO_DATA_RMTEN_GPIO2)>;
+				operation = "overwrite";
+			};
+			reg@3 {
+				// Turn on GPIOs transfer
+				address = <TI_DS90UB635_DATAPATH_CTL1_REG>;
+				value = <(TI_DS90UB635_DATAPATH_CTL1_DCA_CRC_EN | TI_DS90UB635_DATAPATH_CTL1_FC_GPIO_EN_TWO)>;
+				operation = "overwrite";
+			};
+		};
+	};
+
+	/* Camera module control */
+	cam_ctrl_1@1a {
+		compatible = "generic-i2c-device";
+		reg = <0x1a>;
+	};
+
+	ov5695_2: ov5695_mipi1@36 {
+		avdd-supply = <&reg_vref_2v8>;
+		dovdd-supply = <&reg_vref_1v8>;
+		dvdd-supply = <&reg_vref_1v2>;
+		clocks = <&csi_mclk>;
+		clock-names = "xvclk";
+		compatible = "ovti,ov5695", "ov5695";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c4_ov5695_mipi>;
+		reg = <0x36>;
+		csi_id = <1>;
+		reset-gpios = GP_CAMERA2_RESET;
+		status = "okay";
+
+		port {
+			ov5695_mipi1_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
+				remote-endpoint = <&mipi1_ov5695_ep>;
+				link-frequencies = /bits/ 64 <800000000>;
+
+				max-lane-frequency = /bits/ 64 <800000000>;
+				max-pixel-frequency = /bits/ 64 <266000000>;
+			};
+		};
+	};
+};
+
+&i2c6 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c6>;
+	status = "okay";
+
+	mag_iis2mdc: iis2mdc@3d {
+		compatible = "st,iis2mdc";
+		reg = <0x3d>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		status = "okay";
+	};
+};
+
+&irqsteer_hdmi {
+	status = "okay";
+};
+
+&isp_0 {
+	status = "okay";
+};
+
+&isp_1 {
+	status = "okay";
+};
+
+&micfil {
+	status = "disabled";
+};
+
+&mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	clock-frequency = <266000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_266M>;
+	assigned-clock-rates = <266000000>;
+	bus-width = <2>;
+
+	port@0 {
+		reg = <0>;
+
+		mipi0_ov5695_ep: endpoint {
+			remote-endpoint = <&ov5695_mipi0_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&mipi_csi_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	clock-frequency = <266000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_266M>;
+	assigned-clock-rates = <266000000>;
+	bus-width = <2>;
+
+	port@1 {
+		reg = <1>;
+
+		mipi1_ov5695_ep: endpoint {
+			remote-endpoint = <&ov5695_mipi1_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&media_blk_ctrl {
+	status = "okay";
+};
+
+&mix_gpu_ml {
+	status = "okay";
+};
+
+&ml_vipsi {
+	status = "okay";
+};
+
+&pcie {
+	status = "disabled";
+};
+
+&pcie_phy {
+	status = "disabled";
+};
+
+&pwm3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm3>;
+	#pwm-cells = <3>;
+	status = "okay";
+};
+
+&pwm4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm4>;
+	status = "disabled";
+};
+
+&sai3 {
+	status = "disabled";
+};
+
+&uart2 {
+	/* console */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	status = "okay";
+};
+
+&uart3 {
+	status = "disabled";
+};
+
+&uart4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart4>;
+	assigned-clocks = <&clk IMX8MP_CLK_UART4>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_80M>;
+	status = "okay";
+};
+
+&usb3_0 {
+	/* External USB power switches (U10/U12) drive VBUS via PWR_EN GPIOs;
+	 * the SoC must not gate VBUS itself. Clears USB_CTRL0.PORTPWR_EN.
+	 */
+	fsl,disable-port-power-control;
+	status = "okay";
+};
+
+&usb3_1 {
+	fsl,disable-port-power-control;
+	status = "okay";
+};
+
+&usb3_phy0 {
+	status = "okay";
+	vbus-supply = <&reg_usb3_1_vbus>;
+};
+
+&usb3_phy1 {
+	status = "okay";
+	vbus-supply = <&reg_usb3_2_vbus>;
+};
+
+&usb_dwc3_0 {
+	dr_mode = "host";
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb3_1>;
+};
+
+&usb_dwc3_1 {
+	dr_mode = "host";
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb3_2>;
+};
+
+&usdhc1 {
+	status = "okay";
+	non-removable;
+	bus-width = <8>;
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc1>;
+	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
+	vmmc-supply = <&reg_vref_3v3>;
+	vqmmc-1-8-v;
+	vqmmc-supply = <&reg_vref_1v8>;
+};
+

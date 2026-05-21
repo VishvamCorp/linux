@@ -157,6 +157,7 @@ struct edt_ft5x06_ts_data {
 
 	struct timer_list timer;
 	struct work_struct work_i2c_poll;
+	unsigned int poll_rate_ms;
 };
 
 struct edt_i2c_chip_data {
@@ -409,7 +410,7 @@ static void edt_ft5x06_ts_irq_poll_timer(struct timer_list *t)
 	struct edt_ft5x06_ts_data *tsdata = from_timer(tsdata, t, timer);
 
 	schedule_work(&tsdata->work_i2c_poll);
-	mod_timer(&tsdata->timer, jiffies + msecs_to_jiffies(POLL_INTERVAL_MS));
+	mod_timer(&tsdata->timer, jiffies + msecs_to_jiffies(tsdata->poll_rate_ms));
 }
 
 static void edt_ft5x06_ts_work_i2c_poll(struct work_struct *work)
@@ -1411,6 +1412,21 @@ static int edt_ft5x06_ts_probe(struct i2c_client *client)
 			return error;
 		}
 	} else {
+		u32 poll_rate_hz = 1;
+		if (!device_property_read_u32(&client->dev, "poll-rate-hz", &poll_rate_hz)) {
+			if (poll_rate_hz == 0)
+				tsdata->poll_rate_ms = POLL_INTERVAL_MS;
+			else
+				tsdata->poll_rate_ms =
+					clamp_val(1000 / poll_rate_hz,
+						  POLL_INTERVAL_MS, 1000U);
+		} else {
+			tsdata->poll_rate_ms = POLL_INTERVAL_MS;
+		}
+
+		dev_info(&client->dev, "No IRQ specified, using polling mode with %dms interval.\n",
+				tsdata->poll_rate_ms);
+
 		tsdata->init_td_status = -1; /* filter bogus initial data */
 		INIT_WORK(&tsdata->work_i2c_poll,
 			  edt_ft5x06_ts_work_i2c_poll);

@@ -737,6 +737,7 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mm-nitrogen8mm.dtb imx8mm-nitrogen8mm-rpmsg.dtb \
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-nitrogen8mp.dtb imx8mp-nitrogen8mp-rpmsg.dtb \
 			  imx8mp-nitrogen8mp_r20.dtb imx8mp-nitrogen8mp_r20-rpmsg.dtb \
 			  imx8mp-nitrogen8mp-enc.dtb imx8mp-nitrogen8mp-enc-rpmsg.dtb \
+			  imx8mp-nitrogen8mp-enc-cartzy-cm7-rpmsg.dtb \
 			  imx8mp-nitrogen8mp_r20-enc.dtb imx8mp-nitrogen8mp_r20-enc-rpmsg.dtb \
 			  imx8mp-nitrogen8mp_vm.dtb \
 			  imx8mp-nitrogen_smarc.dtb imx8mp-nitrogen_smarc-rpmsg.dtb \
@@ -770,6 +771,12 @@ imx8mp-ezcart-v11-disp-dtbs := imx8mp-ezcart-v1.1-base.dtb imx8mp-cartzy-rpi-dis
 imx8mp-ezcart-v11-m7-disp-dtbs := imx8mp-ezcart-v1.1-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-disp.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-m7-disp.dtb
+
+# Cartzy EzCart v1.2
+imx8mp-ezcart-v12-disp-dtbs := imx8mp-ezcart-v1.2-base.dtb imx8mp-cartzy-rpi-disp.dtbo
+imx8mp-ezcart-v12-m7-disp-dtbs := imx8mp-ezcart-v1.2-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-disp.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-m7-disp.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx93-bdx.dtb \
 			  imx93-nitrogen-smarc.dtb \

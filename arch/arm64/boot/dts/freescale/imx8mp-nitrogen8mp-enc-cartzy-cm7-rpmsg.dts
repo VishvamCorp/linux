@@ -1,0 +1,184 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Cartzy/EZcart DTS for A53 Linux.
+ *
+ * Based on imx8mp-nitrogen8mp-enc-rpmsg.dts.
+ *
+ * =============================================================================
+ * CM7-OWNED PERIPHERALS (Linux must NOT initialize):
+ * =============================================================================
+ *
+ *   UART4      (J23 pins 42/43)  -- CM7 debug UART
+ *              already disabled in imx8mp-nitrogen8mp-enc-rpmsg.dts
+ *
+ *   CAN2       (J23 pins  6/ 8)  -- CM7 CAN bus
+ *              already disabled in imx8mp-nitrogen8mp-enc.dts
+ *
+ *   ECSPI2 + I2C3                -- CM7 initializes ECSPI2 pads as I2C3
+ *              (ECSPI2_SCLK -> I2C3_SCL  J23 pin 16)
+ *              (ECSPI2_MOSI -> I2C3_SDA  J23 pin 12)
+ *              CM7 configures IOMUXC, CCM, and I2C3 directly.
+ *              A53 does not touch ecspi2 or i2c3 at all.
+ *
+ *   GPIO4_IO06/07/08 (J23 pins 3/7/11) -- Sensor IRQ lines.
+ *              Configured as GPIO input in hoggrp (enc DTS).
+ *              CM7 reads GPIO4 registers directly without conflicting with A53.
+ *
+ * Consequence of disabling I2C3:
+ *   WM8960 codec and SAI3 audio are also disabled.
+ *
+ * =============================================================================
+ * UNUSED PERIPHERALS (headless robot platform, disabled to free resources):
+ * =============================================================================
+ *
+ *   LVDS display (ldb, ldb_phy)                  -- no display attached
+ *   HDMI output (hdmi, hdmi_pavi, hdmi_blk_ctrl) -- no HDMI device
+ *   PCIe (pcie, pcie_phy)                        -- no PCIe device
+ *   MIPI CSI camera pipeline                     -- no cameras
+ *     (mipi_csi_0/1, isp_0, isi_1, dewarp, OV5640 sensor, pwm4/csi_mclk)
+ *
+ * =============================================================================
+ * J23 GPIO INTERRUPT SAFETY (for CM7 firmware reference):
+ * =============================================================================
+ *
+ * Linux uses the following GPIO banks as interrupt sources:
+ *   GPIO1: Touchscreen (IO1, IO10), Ethernet PHY (IO7), RTC (IO4), USB Mux (IO8)
+ *   GPIO3: PMIC (IO0), Ethernet PHY (IO2 or IO14)
+ *   GPIO4: MIPI-to-LVDS bridge (IO0), Touchscreen (IO25)
+ *          NOTE: IO0 and IO25 are NOT on J23 -- all J23 GPIO4 pins are safe.
+ *
+ * GPIO2 and GPIO5 have NO interrupt-parent registrations in Linux DTS.
+ *
+ * J23 pin interrupt safety map:
+ *
+ *   Pin  1  GPIO4_IO19  -- safe for CM7 IRQ
+ *   Pin  3  GPIO4_IO06  -- CM7 sensor IRQ (IIS2MDC INT/DRDY)
+ *   Pin  4  GPIO4_IO20  -- safe for CM7 IRQ
+ *   Pin  5  GPIO4_IO11  -- safe for CM7 IRQ
+ *   Pin  6  GPIO3_IO25  -- CM7 owned (CAN2 RX)
+ *   Pin  7  GPIO4_IO07  -- CM7 sensor IRQ (LSM6DSV16X INT1)
+ *   Pin  8  GPIO3_IO24  -- CM7 owned (CAN2 TX)
+ *   Pin  9  GPIO1_IO07  -- !! UNSAFE: Linux Ethernet PHY IRQ !!
+ *   Pin 10  GPIO5_IO12  -- CM7 owned (ECSPI2_MISO)
+ *   Pin 11  GPIO4_IO08  -- CM7 sensor IRQ (LSM6DSV16X INT2)
+ *   Pin 12  GPIO5_IO11  -- CM7 owned (I2C3 SDA)
+ *   Pin 13  GPIO4_IO16  -- safe for CM7 IRQ
+ *   Pin 14  GPIO5_IO13  -- CM7 owned (ECSPI2_SS0)
+ *   Pin 15  GPIO4_IO09  -- safe for CM7 IRQ
+ *   Pin 16  GPIO5_IO10  -- CM7 owned (I2C3 SCL)
+ *   Pin 17  GPIO4_IO10  -- safe for CM7 IRQ
+ *   Pin 18  GPIO5_IO09  -- safe for CM7 IRQ
+ *   Pin 19  GPIO4_IO12  -- safe for CM7 IRQ
+ *   Pin 21  GPIO5_IO08  -- safe for CM7 IRQ
+ *   Pin 22  GPIO2_IO06  -- safe for CM7 IRQ
+ *   Pin 23  GPIO4_IO13  -- safe for CM7 IRQ
+ *   Pin 24  GPIO2_IO07  -- safe for CM7 IRQ
+ *   Pin 25  GPIO4_IO04  -- safe for CM7 IRQ
+ *   Pin 26  GPIO2_IO08  -- safe for CM7 IRQ
+ *   Pin 27  GPIO4_IO14  -- safe for CM7 IRQ
+ *   Pin 28  GPIO2_IO10  -- safe for CM7 IRQ
+ *   Pin 29  GPIO4_IO05  -- safe for CM7 IRQ
+ *   Pin 30  GPIO5_IO03  -- safe for CM7 IRQ
+ *   Pin 31  GPIO4_IO15  -- safe for CM7 IRQ
+ *   Pin 33  GPIO4_IO17  -- safe for CM7 IRQ
+ *   Pin 34  GPIO2_IO09  -- safe for CM7 IRQ
+ *   Pin 36  GPIO4_IO23  -- safe for CM7 IRQ
+ *   Pin 42  GPIO5_IO29  -- CM7 owned (UART4 TX debug)
+ */
+
+#include "imx8mp-nitrogen8mp-enc-rpmsg.dts"
+
+/ {
+	model = "Boundary i.MX 8M Plus Nitrogen8MP ENC - Cartzy CM7 RPMSG";
+	compatible = "boundary,imx8mp-nitrogen8mp-enc-cartzy-cm7-rpmsg", "fsl,imx8mp";
+};
+
+/* ---- CM7-owned peripherals: A53 must not initialize ---- */
+
+/* CM7 owns ECSPI2 pads (J23 pins 10-16) */
+&ecspi2 {
+	status = "disabled";
+};
+
+/* CM7 owns I2C3 controller */
+&i2c3 {
+	status = "disabled";
+};
+
+/* SAI3 used I2C3 (WM8960 codec) -- disabled as consequence */
+&sai3 {
+	status = "disabled";
+};
+
+/* ---- Unused peripherals: headless robot platform ---- */
+
+/* LVDS display outputs -- no display attached */
+&ldb {
+	status = "disabled";
+};
+
+&ldb_phy {
+	status = "disabled";
+};
+
+/* HDMI output -- no HDMI device */
+&hdmi {
+	status = "disabled";
+};
+
+&hdmi_pavi {
+	status = "disabled";
+};
+
+&hdmi_blk_ctrl {
+	status = "disabled";
+};
+
+&hdmiphy {
+	status = "disabled";
+};
+
+/* PCIe -- no PCIe device */
+&pcie {
+	status = "disabled";
+};
+
+&pcie_phy {
+	status = "disabled";
+};
+
+/* MIPI CSI camera pipeline -- no cameras */
+&mipi_csi_0 {
+	status = "disabled";
+};
+
+&mipi_csi_1 {
+	status = "disabled";
+};
+
+/* enc.dts re-enabled isp_0; isi_0 and isp_1 already disabled there */
+&isp_0 {
+	status = "disabled";
+};
+
+/* enc.dts enabled isi_1 for OV5640 capture */
+&isi_1 {
+	status = "disabled";
+};
+
+/* enc.dts re-enabled dewarp */
+&dewarp {
+	status = "disabled";
+};
+
+/* OV5640 sensor on i2c2c -- consequence of MIPI CSI disabled */
+&i2c2c {
+	ov5640-mipi1@3c {
+		status = "disabled";
+	};
+};
+
+/* PWM4 provides csi_mclk clock for OV5640 -- no longer needed */
+&pwm4 {
+	status = "disabled";
+};

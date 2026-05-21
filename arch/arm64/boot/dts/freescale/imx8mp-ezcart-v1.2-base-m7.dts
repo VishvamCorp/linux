@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Cartzy/EZcart V1.2 DTS for A53 Linux + CM7 co-processor.
+ *
+ * Based on imx8mp-ezcart-v1.2-base.dts.
+ *
+ * =============================================================================
+ * CM7-OWNED PERIPHERALS (Linux must NOT initialize):
+ * =============================================================================
+ *
+ *   ECSPI2 -- SPI bus to LSM6DSV16X IMU
+ *              CS:   GPIO5_IO13  (J5 pin 76)
+ *              MISO: ECSPI2_MISO (J5 pin 74)
+ *              MOSI: ECSPI2_MOSI (J5 pin 72)
+ *              SCLK: ECSPI2_SCLK (J5 pin 80)
+ *              INT1: GPIO4_IO07  (J5 pin 36) - LSM6DSV16X DRDY/INT1
+ *              INT2: GPIO4_IO08  (J5 pin 38) - LSM6DSV16X INT2
+ *              Linux DTS declares node as "st,lsm6dsv16x" but no driver loads.
+ *              CM7 owns the SPI bus and sensor exclusively.
+ *
+ *   I2C6   -- I2C bus to magnetometer
+ *              SCL: SAI5_RXFS -> I2C6_SCL
+ *              SDA: SAI5_RXC  -> I2C6_SDA
+ *              INT/DRDY: GPIO4_IO06 (J5 pin 34) -- Magnetometer data ready
+ *              CM7 configures IOMUXC and I2C6 directly.
+ *              A53 does not touch i2c6.
+ *
+ *   UART4  -- CM7 debug/telemetry UART
+ *              RX: UART4_RXD
+ *              TX: UART4_TXD
+ *              Already disabled in base DTS.
+ *
+ * =============================================================================
+ * GPIO INTERRUPT PINS (CM7 firmware reference):
+ * =============================================================================
+ *
+ *   GPIO4_IO07 -- LSM6DSV16X INT1 (DRDY), active-high, input no-pull
+ *   GPIO4_IO08 -- LSM6DSV16X INT2,         active-high, input no-pull
+ *
+ *   Pad mux macros:
+ *     MX8MP_IOMUXC_SAI1_RXD5__GPIO4_IO07
+ *     MX8MP_IOMUXC_SAI1_RXD6__GPIO4_IO08
+ *
+ * =============================================================================
+ * Copyright 2021 Boundary Devices LLC
+ * Update 2026 Vishvam Corporation (Cartzy EzCart V1.2)
+ * =============================================================================
+ */
+
+#include "imx8mp-ezcart-v1.2-base.dts"
+
+/ {
+    model = "Ezurio i.MX8MPlus SOM + EzCart control board V1.2 + M7 core";
+    compatible = "fsl,imx8mp-custom-board",
+                 "boundary,imx8mp-nitrogen8mp",
+                 "boundary,imx8mp-nitrogen8mp-enc-cartzy-cm7-rpmsg",
+                 "fsl,imx8mp";
+
+    reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		m7_reserved: m7@80000000 {
+			no-map;
+			reg = <0 0x80000000 0 0x1000000>;
+		};
+
+		vdev0vring0: vdev0vring0@55000000 {
+			reg = <0 0x55000000 0 0x8000>;
+			no-map;
+		};
+
+		vdev0vring1: vdev0vring1@55008000 {
+			reg = <0 0x55008000 0 0x8000>;
+			no-map;
+		};
+
+		vdevbuffer: vdevbuffer@55400000 {
+			compatible = "shared-dma-pool";
+			reg = <0 0x55400000 0 0x100000>;
+			no-map;
+		};
+
+		rsc_table: rsc-table@550ff000 {
+			reg = <0 0x550ff000 0 0x1000>;
+			no-map;
+		};
+	};
+
+	imx8mp-cm7 {
+		compatible = "fsl,imx8mn-cm7";
+		rsc-da = <0x55000000>;
+		clocks = <&clk IMX8MP_CLK_M7_DIV>;
+		clock-names = "core";
+		mbox-names = "tx", "rx", "rxdb";
+		mboxes = <&mu 0 1
+			  &mu 1 1
+			  &mu 3 1>;
+		memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>,
+				<&rsc_table>, <&m7_reserved>;
+		status = "okay";
+		fsl,startup-delay-ms = <500>;
+	};
+};
+
+/* ---- CM7-owned peripherals: A53 must not initialize ---- */
+
+/* CM7 owns ECSPI2 */
+// &ecspi2 {
+//     status = "disabled";
+// };
+/delete-node/ &ecspi2;
+
+/* CM7 owns I2C6 controller */
+&i2c6 {
+    status = "disabled";
+};
+
+&uart4 {
+    status = "disabled";
+};
+
+&dsp {
+	status = "disabled";
+};
+
+/* PCIe -- no PCIe device */
+&pcie {
+	status = "disabled";
+};
+
+&pcie_phy {
+	status = "disabled";
+};
+
+/* SAI3 used I2C3 (WM8960 codec) -- disabled as consequence */
+&sai3 {
+	status = "disabled";
+};
