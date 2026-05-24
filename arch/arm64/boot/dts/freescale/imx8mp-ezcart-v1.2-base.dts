@@ -741,7 +741,7 @@
 			reg@7 {
 				// GPIO1/3 - Inputs, this reg must me set first
 				address = <TI_DS90UB638_GPIO_INPUT_CTL_REG>;
-				value = <(TI_DS90UB638_GPIO_INPUT_CTL_GPIO1_EN |
+				value = <(TI_DS90UB638_GPIO_INPUT_CTL_GPIO2_EN |
 				TI_DS90UB638_GPIO_INPUT_CTL_GPIO3_EN)>;
 				operation = "overwrite";
 			};
