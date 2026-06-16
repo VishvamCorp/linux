@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Camera overlay for Cartzy EzCart v1.2 - OV5695 dual-camera configuration.
+ *
+ * Two OV5695 sensors connected via FPD-Link III (DS90UB635 serializer
+ * on the camera module, DS90UB638 deserializer on the carrier board).
+ * Camera 1: i2c3 bus -> MIPI CSI-2 port 0
+ * Camera 2: i2c4 bus -> MIPI CSI-2 port 1
+ *
+ * @author Nikita Bulaev agency@grovety.com
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "imx8mp-pinfunc.h"
+#include <dt-bindings/gpio/gpio.h>
+
+/* Camera reset GPIOs — flat pinctrl groups (must not be nested to avoid
+ * triggering non-flat mode in imx_pinctrl_dt_is_flat_functions()).
+ * Open-drain drive is encoded in the pad config value (0x030).
+ */
+&iomuxc {
+	pinctrl_i2c3_ov5695_mipi: i2c3-ov5695-mipigrp {
+		fsl,pins = <
+#define GP_CAMERA1_RESET	<&gpio1 7 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
+		MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07	0x030
+		>;
+	};
+
+	/* Camera 2 reset GPIO — open-drain output on GPIO1_IO14 */
+	pinctrl_i2c4_ov5695_mipi: i2c4-ov5695-mipigrp {
+		fsl,pins = <
+#define GP_CAMERA2_RESET	<&gpio1 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
+		MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x030
+		>;
+	};
+};
+
+/* OV5695 sensor — camera 1 (via DS90UB638/635 FPD-Link on i2c3) */
+&i2c3 {
+	ov5695: ov5695_mipi0@36 {
+		avdd-supply = <&reg_vref_2v8>;
+		dovdd-supply = <&reg_vref_1v8>;
+		dvdd-supply = <&reg_vref_1v2>;
+		clocks = <&csi_mclk>;
+		clock-names = "xvclk";
+		compatible = "ovti,ov5695", "ov5695";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c3_ov5695_mipi>;
+		reg = <0x36>;
+		csi_id = <0>;
+		reset-gpios = GP_CAMERA1_RESET;
+		status = "okay";
+
+		port {
+			ov5695_mipi0_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
+				remote-endpoint = <&mipi0_ov5695_ep>;
+				link-frequencies = /bits/ 64 <800000000>;
+
+				max-lane-frequency = /bits/ 64 <800000000>;
+				max-pixel-frequency = /bits/ 64 <266000000>;
+			};
+		};
+	};
+};
+
+/* OV5695 sensor — camera 2 (via DS90UB638/635 FPD-Link on i2c4) */
+&i2c4 {
+	ov5695_2: ov5695_mipi1@36 {
+		avdd-supply = <&reg_vref_2v8>;
+		dovdd-supply = <&reg_vref_1v8>;
+		dvdd-supply = <&reg_vref_1v2>;
+		clocks = <&csi_mclk>;
+		clock-names = "xvclk";
+		compatible = "ovti,ov5695", "ov5695";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c4_ov5695_mipi>;
+		reg = <0x36>;
+		csi_id = <1>;
+		reset-gpios = GP_CAMERA2_RESET;
+		status = "okay";
+
+		port {
+			ov5695_mipi1_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
+				remote-endpoint = <&mipi1_ov5695_ep>;
+				link-frequencies = /bits/ 64 <800000000>;
+
+				max-lane-frequency = /bits/ 64 <800000000>;
+				max-pixel-frequency = /bits/ 64 <266000000>;
+			};
+		};
+	};
+};
+
+/* MIPI CSI-2 receiver 0 — endpoint pointing to OV5695 cam 1 */
+&mipi_csi_0 {
+	port@0 {
+		reg = <0>;
+
+		mipi0_ov5695_ep: endpoint {
+			remote-endpoint = <&ov5695_mipi0_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+/* MIPI CSI-2 receiver 1 — endpoint pointing to OV5695 cam 2 */
+&mipi_csi_1 {
+	port@1 {
+		reg = <1>;
+
+		mipi1_ov5695_ep: endpoint {
+			remote-endpoint = <&ov5695_mipi1_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};

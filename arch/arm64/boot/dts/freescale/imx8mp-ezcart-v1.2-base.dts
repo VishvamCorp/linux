@@ -219,30 +219,6 @@
 		>;
 	};
 
-	/* GPIO pins for camera #1 */
-	pinctrl_i2c3_ov5695_mipi: i2c3-ov5695-mipigrp {
-		/* Camera 1 RESET GPIO3 */
-		cam1_reset_open_drain: cam1_reset_open_drain {
-			fsl,pins = <
-#define GP_CAMERA1_RESET    <&gpio1 7 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
-			MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07    0x030 /* OpenDrain output */
-			>;
-        	drive-open-source; /* Also force open source */
-    	};
-	};
-
-	/* GPIO pins for camera #2 */
-	pinctrl_i2c4_ov5695_mipi: i2c4-ov5695-mipigrp {
-	/* Camera 2 RESET GPIO3 */
-		cam2_reset_open_drain: cam2_reset_open_drain {
-			fsl,pins = <
-#define GP_CAMERA2_RESET    <&gpio1 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
-			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14    0x030 /* OpenDrain output */
-			>;
-			drive-open-source; /* Also force open source */
-		};
-	};
-
 	pinctrl_ds90ub638_1: ds90ub638_grp_1 {
 		fsl,pins = <
 #define DS90UB638_1_LOCK    <&gpio1 15 IRQ_TYPE_LEVEL_HIGH>
@@ -842,35 +818,8 @@
 	/* Camera module control */
 	cam_ctrl_0@1a {
 		compatible = "generic-i2c-device";
-		reg = <0x1a>;
-	};
-
-	ov5695: ov5695_mipi0@36 {
-		avdd-supply = <&reg_vref_2v8>;
-		dovdd-supply = <&reg_vref_1v8>;
-		dvdd-supply = <&reg_vref_1v2>;
-		clocks = <&csi_mclk>;
-		clock-names = "xvclk";
-		compatible = "ovti,ov5695", "ov5695";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_i2c3_ov5695_mipi>;
-		reg = <0x36>;
-		csi_id = <0>;
-		reset-gpios = GP_CAMERA1_RESET;
-		status = "okay";
-
-		port {
-			ov5695_mipi0_ep: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				remote-endpoint = <&mipi0_ov5695_ep>;
-				link-frequencies = /bits/ 64 <800000000>;
-
-				max-lane-frequency = /bits/ 64 <800000000>;
-				max-pixel-frequency = /bits/ 64 <266000000>;
-			};
-		};
-	};
+        reg = <0x1a>;
+    };
 };
 
 &i2c4 {
@@ -1038,35 +987,8 @@
 	/* Camera module control */
 	cam_ctrl_1@1a {
 		compatible = "generic-i2c-device";
-		reg = <0x1a>;
-	};
-
-	ov5695_2: ov5695_mipi1@36 {
-		avdd-supply = <&reg_vref_2v8>;
-		dovdd-supply = <&reg_vref_1v8>;
-		dvdd-supply = <&reg_vref_1v2>;
-		clocks = <&csi_mclk>;
-		clock-names = "xvclk";
-		compatible = "ovti,ov5695", "ov5695";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_i2c4_ov5695_mipi>;
-		reg = <0x36>;
-		csi_id = <1>;
-		reset-gpios = GP_CAMERA2_RESET;
-		status = "okay";
-
-		port {
-			ov5695_mipi1_ep: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				remote-endpoint = <&mipi1_ov5695_ep>;
-				link-frequencies = /bits/ 64 <800000000>;
-
-				max-lane-frequency = /bits/ 64 <800000000>;
-				max-pixel-frequency = /bits/ 64 <266000000>;
-			};
-		};
-	};
+        reg = <0x1a>;
+    };
 };
 
 &i2c6 {
@@ -1110,17 +1032,6 @@
 	assigned-clock-rates = <266000000>;
 	bus-width = <2>;
 
-	port@0 {
-		reg = <0>;
-
-		mipi0_ov5695_ep: endpoint {
-			remote-endpoint = <&ov5695_mipi0_ep>;
-			data-lanes = <2>;
-			csis-hs-settle = <13>;
-			csis-clk-settle = <2>;
-			csis-wclk;
-		};
-	};
 };
 
 &mipi_csi_1 {
@@ -1132,17 +1043,6 @@
 	assigned-clock-rates = <266000000>;
 	bus-width = <2>;
 
-	port@1 {
-		reg = <1>;
-
-		mipi1_ov5695_ep: endpoint {
-			remote-endpoint = <&ov5695_mipi1_ep>;
-			data-lanes = <2>;
-			csis-hs-settle = <13>;
-			csis-clk-settle = <2>;
-			csis-wclk;
-		};
-	};
 };
 
 &media_blk_ctrl {

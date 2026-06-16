@@ -773,10 +773,32 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-disp.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v11-m7-disp.dtb
 
 # Cartzy EzCart v1.2
-imx8mp-ezcart-v12-disp-dtbs := imx8mp-ezcart-v1.2-base.dtb imx8mp-cartzy-rpi-disp.dtbo
-imx8mp-ezcart-v12-m7-disp-dtbs := imx8mp-ezcart-v1.2-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo
+# base + OV5695 cameras (equivalent to current bare base DTB)
+imx8mp-ezcart-v12-cam-ov5695-dtbs    := imx8mp-ezcart-v1.2-base.dtb imx8mp-ezcart-v1.2-cam-ov5695.dtbo
+imx8mp-ezcart-v12-m7-cam-ov5695-dtbs := imx8mp-ezcart-v1.2-base-m7.dtb imx8mp-ezcart-v1.2-cam-ov5695.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-cam-ov5695.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-m7-cam-ov5695.dtb
+
+# base + display + OV5695 cameras (equivalent to current disp DTB)
+imx8mp-ezcart-v12-disp-dtbs    := imx8mp-ezcart-v1.2-base.dtb imx8mp-cartzy-rpi-disp.dtbo imx8mp-ezcart-v1.2-cam-ov5695.dtbo
+imx8mp-ezcart-v12-m7-disp-dtbs := imx8mp-ezcart-v1.2-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo imx8mp-ezcart-v1.2-cam-ov5695.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-disp.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-m7-disp.dtb
+
+# base + IMX219 cameras
+imx8mp-ezcart-v12-cam-imx219-dtbs    := imx8mp-ezcart-v1.2-base.dtb imx8mp-ezcart-v1.2-cam-imx219.dtbo
+imx8mp-ezcart-v12-m7-cam-imx219-dtbs := imx8mp-ezcart-v1.2-base-m7.dtb imx8mp-ezcart-v1.2-cam-imx219.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-cam-imx219.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-m7-cam-imx219.dtb
+
+# base + display + IMX219 cameras
+imx8mp-ezcart-v12-disp-imx219-dtbs    := imx8mp-ezcart-v1.2-base.dtb imx8mp-cartzy-rpi-disp.dtbo imx8mp-ezcart-v1.2-cam-imx219.dtbo
+imx8mp-ezcart-v12-m7-disp-imx219-dtbs := imx8mp-ezcart-v1.2-base-m7.dtb imx8mp-cartzy-rpi-disp.dtbo imx8mp-ezcart-v1.2-cam-imx219.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-disp-imx219.dtb
+dtb-$(CONFIG_ARCH_MXC) += imx8mp-ezcart-v12-m7-disp-imx219.dtb
+
+## End of Cartzy EzCart v1.2 defines
+####
 
 dtb-$(CONFIG_ARCH_MXC) += imx93-bdx.dtb \
 			  imx93-nitrogen-smarc.dtb \

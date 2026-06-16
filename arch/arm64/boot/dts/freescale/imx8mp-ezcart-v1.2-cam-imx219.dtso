@@ -1,0 +1,148 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Camera overlay for Cartzy EzCart v1.2 - IMX219 dual-camera configuration.
+ *
+ * Two IMX219 sensors connected via FPD-Link III (DS90UB635 serializer
+ * on the camera module, DS90UB638 deserializer on the carrier board).
+ * Camera 1: i2c3 bus -> MIPI CSI-2 port 0
+ * Camera 2: i2c4 bus -> MIPI CSI-2 port 1
+ *
+ * @author Nikita Bulaev agency@grovety.com
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "imx8mp-pinfunc.h"
+#include <dt-bindings/gpio/gpio.h>
+
+/* Camera reset GPIOs — flat pinctrl groups (must not be nested to avoid
+ * triggering non-flat mode in imx_pinctrl_dt_is_flat_functions()).
+ * Open-drain drive is encoded in the pad config value (0x030).
+ */
+&iomuxc {
+    pinctrl_i2c3_imx219_mipi: i2c3-imx219-mipigrp {
+        fsl,pins = <
+#define GP_CAMERA1_RESET    <&gpio1 7 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
+        MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07    0x030
+        >;
+    };
+
+    /* Camera 2 reset GPIO — open-drain output on GPIO1_IO14 */
+    pinctrl_i2c4_imx219_mipi: i2c4-imx219-mipigrp {
+        fsl,pins = <
+#define GP_CAMERA2_RESET    <&gpio1 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>
+        MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14    0x030
+        >;
+    };
+};
+
+/* IMX219 sensor — camera 1 (via DS90UB638/635 FPD-Link on i2c3) */
+&i2c3 {
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    imx219: imx219_mipi0@10 {
+        avdd-supply = <&reg_vref_2v8>;
+        dovdd-supply = <&reg_vref_1v8>;
+        dvdd-supply = <&reg_vref_1v2>;
+
+        compatible = "sony,imx219";
+        reg = <0x10>;
+        clocks = <&csi_mclk>;
+        clock-names = "xvclk";
+
+        csi_id = <0>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_i2c3_imx219_mipi>;
+        /* pwn-gpios = <&gpio5 3 GPIO_ACTIVE_HIGH>;        */ /* Not used, common with deserializer */
+        rst-gpios = GP_CAMERA1_RESET;
+        status = "okay";
+
+        port {
+            mipi_sensor0_ep: endpoint {
+                remote-endpoint = <&mipi_csi0_ep>;
+                data-lanes = <1 2>;
+                clock-lanes = <0>;
+                clock-noncontinuous;
+                link-frequencies = /bits/ 64 <800000000>;
+
+                max-lane-frequency = /bits/ 64 <800000000>;
+                max-pixel-frequency = /bits/ 64 <266000000>;
+            };
+        };
+    };
+};
+
+/* IMX219 sensor — camera 2 (via DS90UB638/635 FPD-Link on i2c4) */
+&i2c4 {
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    imx219_2: imx219_mipi1@10 {
+        avdd-supply = <&reg_vref_2v8>;
+        dovdd-supply = <&reg_vref_1v8>;
+        dvdd-supply = <&reg_vref_1v2>;
+
+        compatible = "sony,imx219";
+        reg = <0x10>;
+        clocks = <&csi_mclk>;
+        clock-names = "xvclk";
+
+        csi_id = <1>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_i2c4_imx219_mipi>;
+        /* pwn-gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>; */ /* Not used, common with deserializer */
+        rst-gpios = GP_CAMERA2_RESET;
+        status = "okay";
+
+        port {
+            mipi_sensor1_ep: endpoint {
+                remote-endpoint = <&mipi_csi1_ep>;
+                data-lanes = <1 2>;
+                clock-lanes = <0>;
+                clock-noncontinuous;
+                link-frequencies = /bits/ 64 <800000000>;
+
+                max-lane-frequency = /bits/ 64 <800000000>;
+                max-pixel-frequency = /bits/ 64 <266000000>;
+            };
+        };
+    };
+};
+
+&mipi_csi_0 {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    status = "okay";
+
+    port@0 {
+        reg = <0>;
+
+        mipi_csi0_ep: endpoint {
+            csis-hs-settle = <13>;
+            csis-clk-settle = <2>;
+            csis-wclk;
+            data-lanes = <2>;
+            remote-endpoint = <&mipi_sensor0_ep>;
+        };
+    };
+};
+
+&mipi_csi_1 {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    status = "okay";
+
+    port@1 {
+        reg = <1>;
+
+        mipi_csi1_ep: endpoint {
+            csis-hs-settle = <13>;
+            csis-clk-settle = <2>;
+            csis-wclk;
+            data-lanes = <2>;
+            remote-endpoint = <&mipi_sensor1_ep>;
+        };
+    };
+};
