@@ -39,6 +39,9 @@
 
 /* OV5695 sensor — camera 1 (via DS90UB638/635 FPD-Link on i2c3) */
 &i2c3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
 	ov5695: ov5695_mipi0@36 {
 		avdd-supply = <&reg_vref_2v8>;
 		dovdd-supply = <&reg_vref_1v8>;
@@ -69,6 +72,9 @@
 
 /* OV5695 sensor — camera 2 (via DS90UB638/635 FPD-Link on i2c4) */
 &i2c4 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
 	ov5695_2: ov5695_mipi1@36 {
 		avdd-supply = <&reg_vref_2v8>;
 		dovdd-supply = <&reg_vref_1v8>;
@@ -99,6 +105,9 @@
 
 /* MIPI CSI-2 receiver 0 — endpoint pointing to OV5695 cam 1 */
 &mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
 	port@0 {
 		reg = <0>;
 
@@ -114,6 +123,9 @@
 
 /* MIPI CSI-2 receiver 1 — endpoint pointing to OV5695 cam 2 */
 &mipi_csi_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
 	port@1 {
 		reg = <1>;
 
